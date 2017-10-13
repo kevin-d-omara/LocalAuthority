@@ -1,57 +1,35 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using NonPlayerClientAuthority;
 using UnityEngine;
 using UnityEngine.Networking;
 
 namespace TabletopCardCompanion
 {
     [RequireComponent(typeof(SpriteRenderer))]
+    [RequireComponent(typeof(CommandExecutor))]
     public class Flip : NetworkBehaviour
     {
         private SpriteRenderer spriteRenderer;
-        private NetworkIdentity networkIdentity;
-        private bool isFlipped;
+        private bool isFlipped;                                     // TODO: match color on late join match
 
-        private delegate void ZeroArgMethod();                                                      // TODO: use Action?
-        private Queue<ZeroArgMethod> callbacks = new Queue<ZeroArgMethod>();
+        private CommandExecutor cmdExecutor;
 
         private void Awake()
         {
             spriteRenderer = GetComponent<SpriteRenderer>();
-            networkIdentity = GetComponent<NetworkIdentity>();
-        }
-
-        public override void OnStartAuthority()
-        {
-            base.OnStartAuthority();
-            if (Player.Singleton == null) return;
-
-            foreach (var callback in callbacks)
-            {
-                callback();
-            }
-            callbacks.Clear();
-            Player.Singleton.CmdReleaseOwnership(networkIdentity);                                  // TODO: Reduce lag by retaining Authority. Thus, only first interaction suffers 2x lag.
+            cmdExecutor = GetComponent<CommandExecutor>();
         }
 
         private void OnMouseOver()
         {
             if (Input.GetButtonDown("Vertical"))
             {
-                CallAsyncWithAuthority(() => CmdFlip());
+                cmdExecutor.CallAsyncWithAuthority(() => CmdFlip());
             }
             if (Input.GetButtonDown("Horizontal"))
             {
                 var x = 0.25f;
-                CallAsyncWithAuthority(() => CmdShift(x));
+                cmdExecutor.CallAsyncWithAuthority(() => CmdShift(x));
             }
-        }
-
-        private void CallAsyncWithAuthority(ZeroArgMethod callback)
-        {
-            callbacks.Enqueue(callback);
-            Player.Singleton.CmdRequestOwnership(networkIdentity);
         }
 
         [Command]
