@@ -13,9 +13,8 @@ namespace TabletopCardCompanion
         private NetworkIdentity networkIdentity;
         private bool isFlipped;
 
-        private delegate void ParameterlessMethod();
-
-        private Queue<ParameterlessMethod> callbacks = new Queue<ParameterlessMethod>();
+        private delegate void ZeroArgMethod();                                                      // TODO: use Action?
+        private Queue<ZeroArgMethod> callbacks = new Queue<ZeroArgMethod>();
 
         private void Awake()
         {
@@ -26,12 +25,14 @@ namespace TabletopCardCompanion
         public override void OnStartAuthority()
         {
             base.OnStartAuthority();
-            if (callbacks.Count > 0)    // TODO: need authority??  && hasAuthority
+            if (Player.Singleton == null) return;
+
+            foreach (var callback in callbacks)
             {
-                var callback = callbacks.Dequeue();
                 callback();
-                Player.Singleton.CmdReleaseOwnership(networkIdentity);
             }
+            callbacks.Clear();
+            Player.Singleton.CmdReleaseOwnership(networkIdentity);                                  // TODO: Reduce lag by retaining Authority. Thus, only first interaction suffers 2x lag.
         }
 
         private void OnMouseOver()
@@ -40,13 +41,21 @@ namespace TabletopCardCompanion
             {
                 CallAsyncWithAuthority(() => CmdFlip());
             }
+            if (Input.GetButtonDown("Horizontal"))
+            {
+                var x = 0.25f;
+                CallAsyncWithAuthority(() => CmdShift(x));
+            }
         }
 
-        private void CallAsyncWithAuthority(ParameterlessMethod callback)
+        private void CallAsyncWithAuthority(ZeroArgMethod callback)
         {
             callbacks.Enqueue(callback);
             Player.Singleton.CmdRequestOwnership(networkIdentity);
         }
+
+        [Command]
+        private void CmdFlip() { RpcFlip(); }
 
         [ClientRpc]
         private void RpcFlip()
@@ -56,6 +65,12 @@ namespace TabletopCardCompanion
         }
 
         [Command]
-        private void CmdFlip() { RpcFlip(); }
+        private void CmdShift(float x) { RpcShift(x); }
+
+        [ClientRpc]
+        private void RpcShift(float x)
+        {
+            spriteRenderer.color += Color.blue * x;
+        }
     }
 }
