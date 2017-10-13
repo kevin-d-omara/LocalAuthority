@@ -14,7 +14,8 @@ namespace TabletopCardCompanion
         private bool isFlipped;
 
         private delegate void ParameterlessMethod();
-        private ParameterlessMethod callbackCommand;
+
+        private Queue<ParameterlessMethod> callbacks = new Queue<ParameterlessMethod>();
 
         private void Awake()
         {
@@ -25,11 +26,10 @@ namespace TabletopCardCompanion
         public override void OnStartAuthority()
         {
             base.OnStartAuthority();
-            if (callbackCommand != null && hasAuthority)
+            if (callbacks.Count > 0)    // TODO: need authority??  && hasAuthority
             {
-//                callbackCommand();
-                CmdFlip();
-                callbackCommand = null;
+                var callback = callbacks.Dequeue();
+                callback();
                 Player.Singleton.CmdReleaseOwnership(networkIdentity);
             }
         }
@@ -38,15 +38,14 @@ namespace TabletopCardCompanion
         {
             if (Input.GetButtonDown("Vertical"))
             {
-                callbackCommand = CmdFlip;
-                Player.Singleton.CmdRequestOwnership(networkIdentity);
+                CallAsyncWithAuthority(() => CmdFlip());
             }
         }
 
-        [Command]
-        private void CmdFlip()
+        private void CallAsyncWithAuthority(ParameterlessMethod callback)
         {
-            RpcFlip();
+            callbacks.Enqueue(callback);
+            Player.Singleton.CmdRequestOwnership(networkIdentity);
         }
 
         [ClientRpc]
@@ -55,5 +54,8 @@ namespace TabletopCardCompanion
             spriteRenderer.color = isFlipped ? Color.white : Color.red;
             isFlipped = !isFlipped;
         }
+
+        [Command]
+        private void CmdFlip() { RpcFlip(); }
     }
 }
