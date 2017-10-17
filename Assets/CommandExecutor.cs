@@ -13,6 +13,10 @@ namespace NonPlayerClientAuthority
     /// authority to tell the server it exploded (via CmdExplode). It first needs to request
     /// authority, through the player. This component, combined with <see cref="CommandAuthorizer"/>,
     /// abstracts this process.
+    /// 
+    /// Must use a closure to pass callback:
+    /// cmdExecutor.CallAsyncWithAuthority(() => CmdExplode()); // yes
+    /// cmdExecutor.CallAsyncWithAuthority(CmdExplode);         // no - doesn't call networked version
     /// </example>
     // TODO: include actual code sample, see https://docs.unity3d.com/ScriptReference/Collider2D.OnTriggerEnter2D.html
     public class CommandExecutor : NetworkBehaviour
