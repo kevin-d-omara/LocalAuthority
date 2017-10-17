@@ -10,24 +10,14 @@ namespace TabletopCardCompanion
     [RequireComponent(typeof(SpriteRenderer))]
     public class Card : NetworkBehaviour
     {
-        public class MyMsgType
+        public class MsgType
         {
-            public static short Flip   = MsgTypeIncrementer.Next;
+            public static short Flip  = MsgTypeIncrementer.Next;
             public static short Shift = MsgTypeIncrementer.Next;
         }
 
-        public class MyNetMessage : MessageBase
-        {
-            public NetworkInstanceId Id;
-        }
-
-        public class ShiftMessage : MyNetMessage
-        {
-            public float Amount;
-        }
-
         private Color FRONT_COLOR = Color.white;
-        private Color BACK_COLOR = Color.red;
+        private Color BACK_COLOR = Color.yellow;
         private Color SHIFT_COLOR = Color.blue;
 
         private SpriteRenderer spriteRenderer;
@@ -37,48 +27,41 @@ namespace TabletopCardCompanion
         {
             spriteRenderer = GetComponent<SpriteRenderer>();
 
-            NetworkServer.RegisterHandler(MyMsgType.Flip, OnFlip);
-            NetworkServer.RegisterHandler(MyMsgType.Shift, OnShift);
+            NetworkServer.RegisterHandler(MsgType.Flip,  OnFlip);
+            NetworkServer.RegisterHandler(MsgType.Shift, OnShift);
         }
 
         public void OnFlip(NetworkMessage netMsg) // can it be private?
         {
-            var msg = netMsg.ReadMessage<MyNetMessage>();
-            var go = ClientScene.FindLocalObject(msg.Id);
-            go.GetComponent<Card>().RpcFlip();
+            var msg = netMsg.ReadMessage<NetIdMessage>();
+            var card = NetUtils.FindLocalComponent<Card>(msg.netId);
+
+            card.RpcFlip();
 
             DebugStreamer.AddMessage("Flipped");
         }
 
         public void OnShift(NetworkMessage netMsg)
         {
-            var msg = netMsg.ReadMessage<ShiftMessage>();
-            var go = ClientScene.FindLocalObject(msg.Id);
-            go.GetComponent<Card>().RpcShift(msg.Amount);
+            var msg = netMsg.ReadMessage<FloatNetIdMessage>();
+            var card = NetUtils.FindLocalComponent<Card>(msg.netId);
 
-            DebugStreamer.AddMessage("Shifted: " + msg.Amount);
+            card.RpcShift(0.25f);
+
+            DebugStreamer.AddMessage("Shifted: " + msg.value);
         }
 
         private void OnMouseOver()
         {
             if (Input.GetButtonDown("Vertical"))
             {
-                var msg = new MyNetMessage();
-                msg.Id = netId;
-                NetworkManager.singleton.client.Send(MyMsgType.Flip, msg);
-                // TODO: make "ShiftMessage : NetworkedMessage : MessageBase"
-                //       NetworkedMessage contains NetworkIdentity or NetworkInstanceID
-                //       Figure out how to use NetId or NetInstID to find a gameobject.
-                //       Use that to have static OnFlip method which finds the correct game object
-                //          to call RpcFlip() on.
+                var msg = new NetIdMessage(netId);
+                NetworkManager.singleton.client.Send(MsgType.Flip, msg);
             }
             if (Input.GetButtonDown("Horizontal"))
             {
-                var x = 0.25f;
-                var msg = new ShiftMessage();
-                msg.Id = netId;
-                msg.Amount = x;
-                NetworkManager.singleton.client.Send(MyMsgType.Shift, msg);
+                var msg = new FloatNetIdMessage(netId, 0.25f);
+                NetworkManager.singleton.client.Send(MsgType.Shift, msg);
             }
         }
 
