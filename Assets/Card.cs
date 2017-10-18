@@ -3,17 +3,29 @@ using NonPlayerClientAuthority;
 using TabletopCardCompanion.Utils;
 using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.Networking.NetworkSystem;
 
 namespace TabletopCardCompanion
 {
     [RequireComponent(typeof(SpriteRenderer))]
     public class Card : NetworkBehaviour
     {
-        public class MsgType
+        [ClientRpc]
+        public void RpcFlip()
         {
-            public static short Flip  = MsgTypeIncrementer.Next;
-            public static short Shift = MsgTypeIncrementer.Next;
+            spriteRenderer.color = isFlipped ? FRONT_COLOR : BACK_COLOR;
+            isFlipped = !isFlipped;
+        }
+
+        [ClientRpc]
+        public void RpcShift(float x)
+        {
+            spriteRenderer.color += SHIFT_COLOR * x;
+        }
+
+        private static class MsgType
+        {
+            public static readonly short Flip  = MsgTypeUid.Next;
+            public static readonly short Shift = MsgTypeUid.Next;
         }
 
         private Color FRONT_COLOR = Color.white;
@@ -29,26 +41,23 @@ namespace TabletopCardCompanion
 
             NetworkServer.RegisterHandler(MsgType.Flip,  OnFlip);
             NetworkServer.RegisterHandler(MsgType.Shift, OnShift);
+            DebugStreamer.AddMessage(gameObject);
         }
 
-        public void OnFlip(NetworkMessage netMsg) // can it be private?
+        private static void OnFlip(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<NetIdMessage>();
-            var card = NetUtils.FindLocalComponent<Card>(msg.netId);
+            var card = NetworkingUtilities.FindLocalComponent<Card>(msg.netId);
 
             card.RpcFlip();
-
-            DebugStreamer.AddMessage("Flipped");
         }
 
-        public void OnShift(NetworkMessage netMsg)
+        private static void OnShift(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<FloatNetIdMessage>();
-            var card = NetUtils.FindLocalComponent<Card>(msg.netId);
+            var card = NetworkingUtilities.FindLocalComponent<Card>(msg.netId);
 
-            card.RpcShift(0.25f);
-
-            DebugStreamer.AddMessage("Shifted: " + msg.value);
+            card.RpcShift(msg.value);
         }
 
         private void OnMouseOver()
@@ -63,19 +72,6 @@ namespace TabletopCardCompanion
                 var msg = new FloatNetIdMessage(netId, 0.25f);
                 NetworkManager.singleton.client.Send(MsgType.Shift, msg);
             }
-        }
-
-        [ClientRpc]
-        public void RpcFlip()
-        {
-            spriteRenderer.color = isFlipped ? FRONT_COLOR : BACK_COLOR;
-            isFlipped = !isFlipped;
-        }
-
-        [ClientRpc]
-        public void RpcShift(float x)
-        {
-            spriteRenderer.color += SHIFT_COLOR * x;
         }
     }
 }

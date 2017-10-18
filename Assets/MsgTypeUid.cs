@@ -2,7 +2,7 @@
 
 namespace TabletopCardCompanion
 {
-    public static class MsgTypeIncrementer
+    public static class MsgTypeUid
     {
         /// <summary>
         /// Return the next available MsgType ID.
