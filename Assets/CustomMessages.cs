@@ -2,6 +2,9 @@
 
 namespace NonPlayerClientAuthority
 {
+    /// <summary>
+    /// Message base class for using Message-invoked RPCs.
+    /// </summary>
     public class NetIdMessage : MessageBase
     {
         public NetworkInstanceId netId;
@@ -63,7 +66,7 @@ namespace NonPlayerClientAuthority
 
     public class IntNetIdMessage : NetIdMessage
     {
-        public float value;
+        public int value;
 
         public IntNetIdMessage()
         {
