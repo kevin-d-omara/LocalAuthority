@@ -10,13 +10,6 @@ namespace TabletopCardCompanion
     public class Card : NetworkBehaviour
     {
         [ClientRpc]
-        public void RpcToggleColor()
-        {
-            spriteRenderer.color = isToggled ? Color.white : TOGGLE_COLOR;
-            isToggled = !isToggled;
-        }
-
-        [ClientRpc]
         public void RpcRotate(int degrees)
         {
             transform.Rotate(Vector3.forward, degrees);
@@ -47,7 +40,7 @@ namespace TabletopCardCompanion
             var msg = netMsg.ReadMessage<NetIdMessage>();
             var card = NetworkingUtilities.FindLocalComponent<Card>(msg.netId);
 
-            card.RpcToggleColor();
+            card.isToggled = !card.isToggled; // Update Model.
         }
 
         private static void OnRotate(NetworkMessage netMsg)
@@ -90,12 +83,37 @@ namespace TabletopCardCompanion
         private Color TOGGLE_COLOR = Color.yellow;
 
         private SpriteRenderer spriteRenderer;
-        private bool isToggled;                                     // TODO: match color on late join match
+
+        [SyncVar(hook = nameof(HookOnToggleColor))]
+        private bool isToggled;
 
         private void Awake()
         {
             spriteRenderer = GetComponent<SpriteRenderer>();
             RegisterMessageCallbacks();
+        }
+
+        /// <summary>
+        /// Model is recieved over network, update the View.
+        /// </summary>
+        public override void OnStartClient()
+        {
+            base.OnStartClient();
+            ApplyToggle(); // Update view.
+        }
+
+        /// <summary>
+        /// Match the color to the current toggle state (i.e. update View with Model).
+        /// </summary>
+        private void ApplyToggle()
+        {
+            spriteRenderer.color = isToggled ? TOGGLE_COLOR : Color.white;
+        }
+
+        private void HookOnToggleColor(bool newState)
+        {
+            isToggled = newState;
+            ApplyToggle();
         }
     }
 }
