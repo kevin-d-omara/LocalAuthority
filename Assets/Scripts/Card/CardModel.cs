@@ -34,6 +34,12 @@ namespace TabletopCardCompanion
         private void Awake()
         {
             view = GetComponent<CardView>();
+        }
+
+        public override void OnStartServer()
+        {
+            base.OnStartServer();
+
             LocalScale = transform.localScale;
         }
 
