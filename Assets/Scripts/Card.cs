@@ -9,17 +9,7 @@ namespace TabletopCardCompanion
     [RequireComponent(typeof(SpriteRenderer))]
     public class Card : NetworkBehaviour
     {
-        [ClientRpc]
-        public void RpcRotate(int degrees)
-        {
-            transform.Rotate(Vector3.forward, degrees);
-        }
-
-        [ClientRpc]
-        public void RpcScale(float percent)
-        {
-            transform.localScale *= 1f + percent;
-        }
+        #region Controller
 
         private static class MsgType
         {
@@ -40,7 +30,8 @@ namespace TabletopCardCompanion
             var msg = netMsg.ReadMessage<NetIdMessage>();
             var card = NetworkingUtilities.FindLocalComponent<Card>(msg.netId);
 
-            card.isToggled = !card.isToggled; // Update Model.
+            // Update Model.
+            card.isToggled = !card.isToggled;
         }
 
         private static void OnRotate(NetworkMessage netMsg)
@@ -48,7 +39,8 @@ namespace TabletopCardCompanion
             var msg = netMsg.ReadMessage<IntNetIdMessage>();
             var card = NetworkingUtilities.FindLocalComponent<Card>(msg.netId);
 
-            card.RpcRotate(msg.value);
+            // Update Model.
+            card.transform.Rotate(Vector3.forward, msg.value);
         }
 
         private static void OnScale(NetworkMessage netMsg)
@@ -56,7 +48,8 @@ namespace TabletopCardCompanion
             var msg = netMsg.ReadMessage<FloatNetIdMessage>();
             var card = NetworkingUtilities.FindLocalComponent<Card>(msg.netId);
 
-            card.RpcScale(msg.value);
+            // Update Model.
+            card.localScale *= 1f + msg.value;
         }
 
         private void OnMouseOver()
@@ -80,18 +73,53 @@ namespace TabletopCardCompanion
             }
         }
 
-        private Color TOGGLE_COLOR = Color.yellow;
+        #endregion
 
+        #region Model
+
+        // Components
         private SpriteRenderer spriteRenderer;
 
-        [SyncVar(hook = nameof(HookOnToggleColor))]
+        // Data
+        private Color TOGGLE_COLOR = Color.yellow;
+
+        [SyncVar(hook = nameof(HookIsToggled))]
         private bool isToggled;
+
+        [SyncVar(hook = nameof(HookLocalScale))]
+        private Vector3 localScale;
 
         private void Awake()
         {
+            // Components
             spriteRenderer = GetComponent<SpriteRenderer>();
+
+            // Initialization
             RegisterMessageCallbacks();
+            localScale = transform.localScale;
         }
+
+        /// <summary>
+        /// Model is updated, and then updates the View.
+        /// </summary>
+        private void HookIsToggled(bool newState)
+        {
+            isToggled = newState;
+            ApplyIsToggled();
+        }
+
+        /// <summary>
+        /// Model is updated, and then updates the View.
+        /// </summary>
+        private void HookLocalScale(Vector3 newScale)
+        {
+            localScale = newScale;
+            ApplyLocalScale();
+        }
+
+        #endregion
+
+        #region View
 
         /// <summary>
         /// Model is recieved over network, update the View.
@@ -99,21 +127,28 @@ namespace TabletopCardCompanion
         public override void OnStartClient()
         {
             base.OnStartClient();
-            ApplyToggle(); // Update view.
+
+            // Update view.
+            ApplyIsToggled();
+            ApplyLocalScale();
         }
 
         /// <summary>
         /// Match the color to the current toggle state (i.e. update View with Model).
         /// </summary>
-        private void ApplyToggle()
+        private void ApplyIsToggled()
         {
             spriteRenderer.color = isToggled ? TOGGLE_COLOR : Color.white;
         }
 
-        private void HookOnToggleColor(bool newState)
+        /// <summary>
+        /// Match the local scale to the current local scale (i.e. update View with Model).
+        /// </summary>
+        private void ApplyLocalScale()
         {
-            isToggled = newState;
-            ApplyToggle();
+            transform.localScale = localScale;
         }
+
+        #endregion
     }
 }
