@@ -1,6 +1,6 @@
 ﻿using UnityEngine.Networking;
 
-namespace TabletopCardCompanion
+namespace NonPlayerClientAuthority.Message
 {
     public static class MsgTypeUid
     {

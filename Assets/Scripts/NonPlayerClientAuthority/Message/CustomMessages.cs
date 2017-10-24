@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
 
-namespace NonPlayerClientAuthority
+namespace NonPlayerClientAuthority.Message
 {
     /// <summary>
     /// Message base class for using Message-invoked RPCs.

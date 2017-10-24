@@ -1,4 +1,5 @@
-﻿using NonPlayerClientAuthority;
+﻿using NonPlayerClientAuthority.Command;
+using NonPlayerClientAuthority.Message;
 using TabletopCardCompanion.Utils;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -7,20 +8,18 @@ namespace TabletopCardCompanion
 {
     public class CardController : NetworkBehaviour
     {
-        public override void OnStartClient()
-        {
-            base.OnStartClient();
-        }
+        #region In-Progres
 
         private void Update()
         {
+            // Release ownership.
             if (Input.GetButtonDown("Cancel"))
             {
-                var netTransform = GetComponent<NetworkTransform>();
                 var identity = GetComponent<NetworkIdentity>();
                 CommandAuthorizer.Instance.CmdReleaseOwnership(identity);
             }
 
+            // Request ownership.
             if (Input.GetButtonDown("Submit"))
             {
                 var identity = GetComponent<NetworkIdentity>();
@@ -28,27 +27,23 @@ namespace TabletopCardCompanion
                 CommandAuthorizer.Instance.CmdRequestOwnership(identity);
             }
 
-            var speed = 0.2f;
-            var dx = Input.GetAxis("Horizontal") * speed;
-            var dy = Input.GetAxis("Vertical") * speed;
+            MoveByKeyboardInput();
 
-            var deltaPos = new Vector3(dx, dy, 0f);
-            var msg = new Vector3NetIdMessage(netId, deltaPos);
-//            NetworkManager.singleton.client.Send(MsgType.Move, msg);
+            // BUG: velocity becomes non-zero when Ownership is released (if other peers are still interpolating).
+            GetComponent<Rigidbody2D>().velocity = Vector2.zero;
 
-            transform.position += deltaPos;
-
+            // Print NetworkTransform target position and velocity.
             var netTrans = GetComponent<NetworkTransform>();
             DebugStreamer.AddMessage("pos: " + netTrans.targetSyncPosition + "; vel: " + netTrans.targetSyncVelocity);
         }
 
-        private static void OnMoved(NetworkMessage netMsg)
+        private void MoveByKeyboardInput()
         {
-            var msg = netMsg.ReadMessage<Vector3NetIdMessage>();
-            var model = NetworkingUtilities.FindLocalComponent<CardModel>(msg.netId);
-
-            var delta = msg.value;
-            model.transform.position += delta;
+            var speed = 0.2f;
+            var dx = Input.GetAxis("Horizontal") * speed;
+            var dy = Input.GetAxis("Vertical") * speed;
+            var deltaPos = new Vector3(dx, dy, 0f);
+            transform.position += deltaPos;
         }
 
         private void OnMouseDown()
@@ -58,7 +53,9 @@ namespace TabletopCardCompanion
 
         private void OnMouseUp()
         {
-//            CommandAuthorizer.Instance.CmdReleaseOwnership(GetComponent<NetworkIdentity>());
+            // TODO: something about NetworkTransform.TargetVelocity
+            //       ^ b.c. object teleports to this static position when ownership is released.
+            CommandAuthorizer.Instance.CmdReleaseOwnership(GetComponent<NetworkIdentity>());
         }
 
         private void OnMouseDrag()
@@ -67,11 +64,13 @@ namespace TabletopCardCompanion
             var mousePosition = cam.ScreenToWorldPoint(Input.mousePosition);
             mousePosition.z = 0f;
 
-            var delta = mousePosition - transform.position;
-
-            transform.position += delta;
-            DebugStreamer.AddMessage(delta);
+            var deltaPos = mousePosition - transform.position;
+            transform.position += deltaPos;
         }
+
+        #endregion In-Progress
+
+
 
 
         private void OnMouseOver()
@@ -132,7 +131,6 @@ namespace TabletopCardCompanion
             NetworkServer.RegisterHandler(MsgType.ToggleColor, OnToggleColor);
             NetworkServer.RegisterHandler(MsgType.Rotate, OnRotate);
             NetworkServer.RegisterHandler(MsgType.Scale, OnScale);
-            NetworkServer.RegisterHandler(MsgType.Move, OnMoved);
         }
 
         private static class MsgType
@@ -140,7 +138,6 @@ namespace TabletopCardCompanion
             public static readonly short ToggleColor = MsgTypeUid.Next;
             public static readonly short Rotate = MsgTypeUid.Next;
             public static readonly short Scale = MsgTypeUid.Next;
-            public static readonly short Move = MsgTypeUid.Next;
         }
     }
 }

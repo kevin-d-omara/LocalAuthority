@@ -1,6 +1,6 @@
 ﻿using UnityEngine.Networking;
 
-namespace NonPlayerClientAuthority
+namespace NonPlayerClientAuthority.Command
 {
     /// <summary>
     /// Attach this component to the player prefab to allow <see cref="CommandExecutor"/> to work.
@@ -13,11 +13,25 @@ namespace NonPlayerClientAuthority
         public static CommandAuthorizer Instance { get; private set; }
 
         /// <summary>
-        /// Give this client ownership of the object.
+        /// Give this client ownership of the object, even if it is already owned.
         /// </summary>
         [Command]
         public void CmdRequestOwnership(NetworkIdentity identity)
         {
+            // We already have ownership.
+            if (identity.clientAuthorityOwner == connectionToClient)
+            {
+                return;
+            }
+
+            // Someone else has ownership.
+            if (identity.clientAuthorityOwner != null)
+            {
+                // Force owner to release ownership.
+                // Something about a callback...
+                return;
+            }
+
             identity.AssignClientAuthority(connectionToClient);
         }
 
@@ -27,13 +41,16 @@ namespace NonPlayerClientAuthority
         [Command]
         public void CmdReleaseOwnership(NetworkIdentity identity)
         {
-            identity.RemoveClientAuthority(connectionToClient);
+            if (identity.clientAuthorityOwner != null)
+            {
+                identity.RemoveClientAuthority(connectionToClient);
+            }
         }
 
         public override void OnStartLocalPlayer()
         {
             base.OnStartLocalPlayer();
-            Instance = this;
+            if (isLocalPlayer) Instance = this;
         }
     }
 }

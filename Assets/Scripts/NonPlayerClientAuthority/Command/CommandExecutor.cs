@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.Networking;
 
-namespace NonPlayerClientAuthority
+namespace NonPlayerClientAuthority.Command
 {
     /// <summary>
     /// Attach this component to any non-player object which needs authority to execute commands.
