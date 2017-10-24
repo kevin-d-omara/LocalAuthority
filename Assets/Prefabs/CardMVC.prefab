@@ -21,11 +21,14 @@ GameObject:
   - component: {fileID: 4903484203571684}
   - component: {fileID: 114149870597442252}
   - component: {fileID: 114395038860203836}
+  - component: {fileID: 114130551815472468}
   - component: {fileID: 61235529878712024}
+  - component: {fileID: 50574024133144388}
   - component: {fileID: 212197474928289994}
   - component: {fileID: 114881866147843286}
   - component: {fileID: 114909224629150868}
   - component: {fileID: 114180896147974748}
+  - component: {fileID: 114666327460308792}
   m_Layer: 0
   m_Name: CardMVC
   m_TagString: Untagged
@@ -46,6 +49,26 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!50 &50574024133144388
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1199826234068616}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
 --- !u!61 &61235529878712024
 BoxCollider2D:
   m_ObjectHideFlags: 1
@@ -55,7 +78,7 @@ BoxCollider2D:
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
@@ -71,6 +94,19 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.16, y: 0.16}
   m_EdgeRadius: 0
+--- !u!114 &114130551815472468
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1199826234068616}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -837897634, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_VisualizerPrefab: {fileID: 1290920622005744, guid: 31ad3b5c8c654ca45870129a76062337,
+    type: 2}
 --- !u!114 &114149870597442252
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -125,16 +161,27 @@ MonoBehaviour:
   m_Script: {fileID: -1768714887, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_TransformSyncMode: 1
-  m_SendInterval: 0.033333335
+  m_TransformSyncMode: 2
+  m_SendInterval: 0.11111111
   m_SyncRotationAxis: 3
   m_RotationSyncCompression: 0
   m_SyncSpin: 0
   m_MovementTheshold: 0.001
   m_VelocityThreshold: 0.0001
-  m_SnapThreshold: 5
-  m_InterpolateRotation: 1
+  m_SnapThreshold: 20
+  m_InterpolateRotation: 0
   m_InterpolateMovement: 1
+--- !u!114 &114666327460308792
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1199826234068616}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c4f3d255ee6c664590a33d88a47de50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114881866147843286
 MonoBehaviour:
   m_ObjectHideFlags: 1
