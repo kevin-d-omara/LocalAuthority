@@ -1,57 +1,40 @@
-﻿using LocalAuthority.Command;
-using TabletopCardCompanion.Utils;
+﻿using System.Collections;
+using LocalAuthority.Command;
+using TabletopCardCompanion;
 using UnityEngine;
 using UnityEngine.Networking;
 
 namespace LocalAuthority
 {
+    [RequireComponent(typeof(NetworkTransform))]
     public class NetworkPosition : NetworkBehaviour
     {
-        private Vector3 targetPosition;
-        private NetworkInstanceId owner;
+        private static float waitTime = 0.5f;
 
-        private float sendRate = 9f / 60f;
-        private float lastSendTime = 0f;
+        private NetworkTransform netTransform;
+        private NetworkIdentity networkIdentity;
 
-
-        public void RequestOwnership()
+        public void ReleaseMovement()
         {
-            owner = CommandAuthorizer.Instance.netId;
-            // broadcast
+            PrivateAccess.SetInstanceField(typeof(NetworkTransform), netTransform, "m_TargetSyncPosition", transform.position);
+            // TODO: broadcast "finished" message
+            netTransform.enabled = false;
+            CommandAuthorizer.Instance.CmdReleaseOwnership(networkIdentity);
+            StartCoroutine(ReEnableNetworkTransform(waitTime));
         }
 
-
-        private void FixedUpdate()
+        private IEnumerator ReEnableNetworkTransform(float afterSeconds)
         {
-            if (isOwner())
-            {
-                FixedUpdateOwner();
-            }
-            else
-            {
-                FixedUpdateClient();
-            }
+            yield return new WaitForSeconds(afterSeconds);
+            netTransform.enabled = true;
         }
 
-        private bool isOwner()
-        {
-            return owner == CommandAuthorizer.Instance.netId;
-        }
+        // TODO: receive message
 
-        private void FixedUpdateOwner()
+        private void Awake()
         {
-            DebugStreamer.AddMessage("Owner");
-
-            if (Time.time - lastSendTime > sendRate)
-            {
-                DebugStreamer.AddMessage("Send");
-                lastSendTime = Time.time;
-            }
-        }
-
-        private void FixedUpdateClient()
-        {
-            DebugStreamer.AddMessage("Client");
+            netTransform = GetComponent<NetworkTransform>();
+            networkIdentity = GetComponent<NetworkIdentity>();
         }
     }
 }
