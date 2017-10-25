@@ -53,8 +53,9 @@ namespace TabletopCardCompanion
 
         private void OnMouseUp()
         {
-            // TODO: something about NetworkTransform.TargetVelocity
-            //       ^ b.c. object teleports to this static position when ownership is released.
+            var netTransform = GetComponent<NetworkTransform>();
+            PrivateAccess.SetInstanceField(typeof(NetworkTransform), netTransform, "m_TargetSyncPosition", transform.position);
+
             CommandAuthorizer.Instance.CmdReleaseOwnership(GetComponent<NetworkIdentity>());
         }
 
