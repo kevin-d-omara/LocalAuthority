@@ -12,22 +12,22 @@ namespace TabletopCardCompanion
 
         private void Update()
         {
-            // Release ownership.
-            if (Input.GetButtonDown("Cancel"))
-            {
-                var identity = GetComponent<NetworkIdentity>();
-                CommandAuthorizer.Instance.CmdReleaseOwnership(identity);
-            }
-
-            // Request ownership.
-            if (Input.GetButtonDown("Submit"))
-            {
-                var identity = GetComponent<NetworkIdentity>();
-                // TODO: take ownership from others
-                CommandAuthorizer.Instance.CmdRequestOwnership(identity);
-            }
-
-            MoveByKeyboardInput();
+//            // Release ownership.
+//            if (Input.GetButtonDown("Cancel"))
+//            {
+//                var identity = GetComponent<NetworkIdentity>();
+//                CommandAuthorizer.Instance.CmdReleaseOwnership(identity);
+//            }
+//
+//            // Request ownership.
+//            if (Input.GetButtonDown("Submit"))
+//            {
+//                var identity = GetComponent<NetworkIdentity>();
+//                // TODO: take ownership from others
+//                CommandAuthorizer.Instance.CmdRequestOwnership(identity);
+//            }
+//
+//            MoveByKeyboardInput();
 
             // BUG: velocity becomes non-zero when Ownership is released (if other peers are still interpolating).
             GetComponent<Rigidbody2D>().velocity = Vector2.zero;
@@ -72,6 +72,7 @@ namespace TabletopCardCompanion
 
 
 
+        // TODO: (?) wrap Send so that it sends to the current owner?
 
         private void OnMouseOver()
         {

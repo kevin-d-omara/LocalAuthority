@@ -13,26 +13,15 @@ namespace NonPlayerClientAuthority.Command
         public static CommandAuthorizer Instance { get; private set; }
 
         /// <summary>
-        /// Give this client ownership of the object, even if it is already owned.
+        /// Give this client ownership of the object if it is available.
         /// </summary>
         [Command]
         public void CmdRequestOwnership(NetworkIdentity identity)
         {
-            // We already have ownership.
-            if (identity.clientAuthorityOwner == connectionToClient)
+            if (identity.clientAuthorityOwner == null)
             {
-                return;
+                identity.AssignClientAuthority(connectionToClient);
             }
-
-            // Someone else has ownership.
-            if (identity.clientAuthorityOwner != null)
-            {
-                // Force owner to release ownership.
-                // Something about a callback...
-                return;
-            }
-
-            identity.AssignClientAuthority(connectionToClient);
         }
 
         /// <summary>
