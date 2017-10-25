@@ -1,7 +1,7 @@
 ﻿using UnityEngine.Networking;
 using Debug = UnityEngine.Debug;
 
-namespace NonPlayerClientAuthority.Message
+namespace LocalAuthority.Message
 {
     public static class NetworkingUtilities
     {

@@ -1,6 +1,6 @@
 ﻿using UnityEngine.Networking;
 
-namespace NonPlayerClientAuthority.Message
+namespace LocalAuthority.Message
 {
     public static class MsgTypeUid
     {

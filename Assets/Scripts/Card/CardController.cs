@@ -1,5 +1,5 @@
-﻿using NonPlayerClientAuthority.Command;
-using NonPlayerClientAuthority.Message;
+﻿using LocalAuthority.Command;
+using LocalAuthority.Message;
 using TabletopCardCompanion.Utils;
 using UnityEngine;
 using UnityEngine.Networking;

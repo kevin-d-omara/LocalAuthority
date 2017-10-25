@@ -1,9 +1,9 @@
-﻿using NonPlayerClientAuthority.Command;
+﻿using LocalAuthority.Command;
 using TabletopCardCompanion.Utils;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace NonPlayerClientAuthority
+namespace LocalAuthority
 {
     public class NetworkPosition : NetworkBehaviour
     {

@@ -1,6 +1,6 @@
 ﻿using UnityEngine.Networking;
 
-namespace NonPlayerClientAuthority.Command
+namespace LocalAuthority.Command
 {
     /// <summary>
     /// Attach this component to the player prefab to allow <see cref="CommandExecutor"/> to work.
