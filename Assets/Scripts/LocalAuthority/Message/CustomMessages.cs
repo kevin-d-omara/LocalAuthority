@@ -4,10 +4,13 @@ using UnityEngine.Networking;
 namespace LocalAuthority.Message
 {
     /// <summary>
-    /// Message base class for using Message-invoked RPCs.
+    /// Message base class for using Message-invoked RPCs. Contains the NetworkInstanceId of the object that is sending the message.
     /// </summary>
     public class NetIdMessage : MessageBase
     {
+        /// <summary>
+        /// The NetworkInstanceId of the object that send this message.
+        /// </summary>
         public NetworkInstanceId netId;
 
         public NetIdMessage()
@@ -167,6 +170,36 @@ namespace LocalAuthority.Message
         {
             base.Serialize(writer);
             writer.Write(value);
+        }
+    }
+
+    public class TwoNetIdMessage : NetIdMessage
+    {
+        public NetworkInstanceId netId2;
+
+        public TwoNetIdMessage()
+        {
+        }
+
+        public TwoNetIdMessage(NetworkInstanceId id) : base(id)
+        {
+        }
+
+        public TwoNetIdMessage(NetworkInstanceId id, NetworkInstanceId id2) : base(id)
+        {
+            netId2 = id2;
+        }
+
+        public override void Deserialize(NetworkReader reader)
+        {
+            base.Deserialize(reader);
+            netId2 = reader.ReadNetworkId();
+        }
+
+        public override void Serialize(NetworkWriter writer)
+        {
+            base.Serialize(writer);
+            writer.Write(netId2);
         }
     }
 }
