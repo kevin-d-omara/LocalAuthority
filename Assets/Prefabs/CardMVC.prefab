@@ -23,13 +23,13 @@ GameObject:
   - component: {fileID: 114395038860203836}
   - component: {fileID: 114328040205226098}
   - component: {fileID: 114292178162755908}
+  - component: {fileID: 114518126670251358}
   - component: {fileID: 61235529878712024}
   - component: {fileID: 50574024133144388}
   - component: {fileID: 212197474928289994}
   - component: {fileID: 114881866147843286}
   - component: {fileID: 114909224629150868}
   - component: {fileID: 114180896147974748}
-  - component: {fileID: 114666327460308792}
   m_Layer: 0
   m_Name: CardMVC
   m_TagString: Untagged
@@ -155,7 +155,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1199826234068616}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: -837897634, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
   m_Name: 
@@ -168,7 +168,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1199826234068616}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: -1768714887, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
   m_Name: 
@@ -183,7 +183,7 @@ MonoBehaviour:
   m_SnapThreshold: 20
   m_InterpolateRotation: 0
   m_InterpolateMovement: 1
---- !u!114 &114666327460308792
+--- !u!114 &114518126670251358
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -191,7 +191,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1199826234068616}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c4f3d255ee6c664590a33d88a47de50, type: 3}
+  m_Script: {fileID: 11500000, guid: aa86f20c7cf972d4b913bcae81c34d52, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &114881866147843286

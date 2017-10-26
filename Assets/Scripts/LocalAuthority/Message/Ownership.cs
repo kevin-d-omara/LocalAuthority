@@ -1,4 +1,6 @@
-﻿using UnityEngine.Networking;
+﻿using TabletopCardCompanion;
+using TabletopCardCompanion.Debug;
+using UnityEngine.Networking;
 
 namespace LocalAuthority.Message
 {
@@ -6,8 +8,7 @@ namespace LocalAuthority.Message
     /// This tracks player ownership of a GameObject. This does NOT give actual authority, it merely offers server
     /// authoritative way to track and change ownership.
     /// </summary>
-    /// <remarks>This method of manipulating ownership is NOT resilient to cheating. That's fine, this is for use in a
-    /// multiplayer game where cheating is "acceptable".</remarks>
+    /// <remarks>It is required that the Player prefab has "PlayerInfo" attached.</remarks>
     public class Ownership : NetworkBehaviour
     {
         /// <summary>
@@ -16,29 +17,46 @@ namespace LocalAuthority.Message
         public NetworkIdentity Owner { get { return owner; } set { owner = value; } }
 
         /// <summary>
+        /// True if owned by the local player.
+        /// </summary>
+        public bool IsOwnedByLocal
+        {
+            get { return Owner == PlayerInfo.LocalPlayer.NetIdentity; }
+        }
+
+        /// <summary>
+        /// True if owned by another player.
+        /// </summary>
+        public bool IsOwnedByRemote
+        {
+            get { return Owner != null && Owner != PlayerInfo.LocalPlayer.NetIdentity; }
+        }
+
+
+        /// <summary>
+        /// True if owned by no player.
+        /// </summary>
+        public bool IsOwnedByNone
+        {
+            get { return Owner == null; }
+        }
+
+        /// <summary>
         /// Give this client ownership of the object if it is not already owned.
         /// </summary>
-        /// <param name="requester">NetworkIdentity attached to the player's game object.</param>
-        public void RequestOwnership(NetworkIdentity requester)
+        public void RequestOwnership()
         {
-            if (requester.isLocalPlayer)
-            {
-                var msg = new TwoNetIdMessage(netId, requester.netId);
-                NetworkManager.singleton.client.Send(MsgType.RequestOwnership, msg);
-            }
+            var msg = new TwoNetIdMessage(netId, PlayerInfo.LocalPlayer.netId);
+            NetworkManager.singleton.client.Send((short)MsgType.RequestOwnership, msg);
         }
 
         /// <summary>
         /// Release ownership of the object so that it has no owner.
         /// </summary>
-        /// <param name="requester">NetworkIdentity attached to the player's game object.</param>
-        public void ReleaseOwnership(NetworkIdentity requester)
+        public void ReleaseOwnership()
         {
-            if (requester.isLocalPlayer)
-            {
-                var msg = new TwoNetIdMessage(netId, requester.netId);
-                NetworkManager.singleton.client.Send(MsgType.ReleaseOwnership, msg);
-            }
+            var msg = new TwoNetIdMessage(netId, PlayerInfo.LocalPlayer.netId);
+            NetworkManager.singleton.client.Send((short)MsgType.ReleaseOwnership, msg);
         }
 
         private static void OnRequestOwnership(NetworkMessage netMsg)
@@ -65,8 +83,20 @@ namespace LocalAuthority.Message
             }
         }
 
-        [SyncVar]
+
+
+        [SyncVar(hook = nameof(HookOwner))]
         private NetworkIdentity owner;
+
+        private void HookOwner(NetworkIdentity networkIdentity)
+        {
+            // TODO: broadcast event (maybe use unity networking SyncEvent?) <------------------------------------------
+            owner = networkIdentity;
+            var str = owner != null ? owner.netId.ToString() : " ";
+            DebugStreamer.AddMessage("new owner: " + str);
+        }
+
+
 
         private void Awake()
         {
@@ -75,14 +105,14 @@ namespace LocalAuthority.Message
 
         private void RegisterMessageCallbacks()
         {
-            NetworkServer.RegisterHandler(MsgType.RequestOwnership, OnRequestOwnership);
-            NetworkServer.RegisterHandler(MsgType.ReleaseOwnership, OnReleaseOwnership);
+            NetworkServer.RegisterHandler((short)MsgType.RequestOwnership, OnRequestOwnership);
+            NetworkServer.RegisterHandler((short)MsgType.ReleaseOwnership, OnReleaseOwnership);
         }
 
-        private static class MsgType
+        private enum MsgType : short
         {
-            public static readonly short RequestOwnership = MsgTypeUid.Next;
-            public static readonly short ReleaseOwnership = MsgTypeUid.Next;
+            RequestOwnership = UnityEngine.Networking.MsgType.Highest + 10,
+            ReleaseOwnership,
         }
     }
 }

@@ -1,29 +1,39 @@
 ﻿using LocalAuthority;
-using LocalAuthority.Command;
 using LocalAuthority.Message;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
 
 namespace TabletopCardCompanion
 {
+    [RequireComponent(typeof(Ownership))]
+    [RequireComponent(typeof(NetworkPosition))]
     public class CardController : NetworkBehaviour
     {
         #region In-Progres
 
         private void OnMouseDown()
         {
-            CommandAuthorizer.Instance.CmdRequestOwnership(GetComponent<NetworkIdentity>());
+            ownership.RequestOwnership();
         }
 
         private void OnMouseDrag()
         {
-            // if (owner || no-owner)
-            MoveToMousePosition();
+            if (ownership.IsOwnedByLocal || ownership.IsOwnedByNone)
+            {
+                MoveToMousePosition();
+                // ^^ update NetworkPosition.TargetSyncPosition?
+            }
         }
 
         private void OnMouseUp()
         {
-            networkPosition.ReleaseMovement();
+            if (ownership.IsOwnedByLocal || ownership.IsOwnedByNone)
+            {
+                ownership.ReleaseOwnership();
+                // broadcast final position
+                // udpate targetsyncposition
+            }
         }
 
         private void MoveToMousePosition()
@@ -38,26 +48,24 @@ namespace TabletopCardCompanion
 
         #endregion In-Progress
 
-        // TODO: (?) wrap Send so that it sends to the current owner?
-
         private void OnMouseOver()
         {
             if (Input.GetButtonDown("Jump"))
             {
                 var msg = new NetIdMessage(netId);
-                NetworkManager.singleton.client.Send(MsgType.ToggleColor, msg);
+                NetworkManager.singleton.client.Send((short)MsgType.ToggleColor, msg);
             }
             if (Input.GetButtonDown("Rotate"))
             {
                 var direction = Input.GetAxis("Rotate") > 0 ? 1 : -1;
                 var msg = new IntNetIdMessage(netId, 60 * direction);
-                NetworkManager.singleton.client.Send(MsgType.Rotate, msg);
+                NetworkManager.singleton.client.Send((short)MsgType.Rotate, msg);
             }
             if (Input.GetButtonDown("Scale"))
             {
                 var percent = Input.GetAxis("Scale") > 0 ? 1f : -1f;
                 var msg = new FloatNetIdMessage(netId, 0.1f * percent);
-                NetworkManager.singleton.client.Send(MsgType.Scale, msg);
+                NetworkManager.singleton.client.Send((short)MsgType.Scale, msg);
             }
         }
 
@@ -87,26 +95,28 @@ namespace TabletopCardCompanion
             model.LocalScale *= 1f + percent;
         }
 
+        private Ownership ownership;
         private NetworkPosition networkPosition;
 
         private void Awake()
         {
             RegisterMessageCallbacks();
+            ownership = GetComponent<Ownership>();
             networkPosition = GetComponent<NetworkPosition>();
         }
 
         private void RegisterMessageCallbacks()
         {
-            NetworkServer.RegisterHandler(MsgType.ToggleColor, OnToggleColor);
-            NetworkServer.RegisterHandler(MsgType.Rotate, OnRotate);
-            NetworkServer.RegisterHandler(MsgType.Scale, OnScale);
+            NetworkServer.RegisterHandler((short)MsgType.ToggleColor, OnToggleColor);
+            NetworkServer.RegisterHandler((short)MsgType.Rotate, OnRotate);
+            NetworkServer.RegisterHandler((short)MsgType.Scale, OnScale);
         }
 
-        private static class MsgType
+        private enum MsgType : short
         {
-            public static readonly short ToggleColor = MsgTypeUid.Next;
-            public static readonly short Rotate = MsgTypeUid.Next;
-            public static readonly short Scale = MsgTypeUid.Next;
+            ToggleColor = UnityEngine.Networking.MsgType.Highest + 1,
+            Rotate,
+            Scale,
         }
     }
 }
