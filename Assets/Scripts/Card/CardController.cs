@@ -1,6 +1,6 @@
-﻿using LocalAuthority.Command;
+﻿using LocalAuthority;
+using LocalAuthority.Command;
 using LocalAuthority.Message;
-using TabletopCardCompanion.Utils;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -10,56 +10,23 @@ namespace TabletopCardCompanion
     {
         #region In-Progres
 
-        private void Update()
-        {
-//            // Release ownership.
-//            if (Input.GetButtonDown("Cancel"))
-//            {
-//                var identity = GetComponent<NetworkIdentity>();
-//                CommandAuthorizer.Instance.CmdReleaseOwnership(identity);
-//            }
-//
-//            // Request ownership.
-//            if (Input.GetButtonDown("Submit"))
-//            {
-//                var identity = GetComponent<NetworkIdentity>();
-//                // TODO: take ownership from others
-//                CommandAuthorizer.Instance.CmdRequestOwnership(identity);
-//            }
-//
-//            MoveByKeyboardInput();
-
-            // BUG: velocity becomes non-zero when Ownership is released (if other peers are still interpolating).
-            GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-
-            // Print NetworkTransform target position and velocity.
-            var netTrans = GetComponent<NetworkTransform>();
-            DebugStreamer.AddMessage("pos: " + netTrans.targetSyncPosition + "; vel: " + netTrans.targetSyncVelocity);
-        }
-
-        private void MoveByKeyboardInput()
-        {
-            var speed = 0.2f;
-            var dx = Input.GetAxis("Horizontal") * speed;
-            var dy = Input.GetAxis("Vertical") * speed;
-            var deltaPos = new Vector3(dx, dy, 0f);
-            transform.position += deltaPos;
-        }
-
         private void OnMouseDown()
         {
             CommandAuthorizer.Instance.CmdRequestOwnership(GetComponent<NetworkIdentity>());
         }
 
-        private void OnMouseUp()
+        private void OnMouseDrag()
         {
-            var netTransform = GetComponent<NetworkTransform>();
-            PrivateAccess.SetInstanceField(typeof(NetworkTransform), netTransform, "m_TargetSyncPosition", transform.position);
-
-            CommandAuthorizer.Instance.CmdReleaseOwnership(GetComponent<NetworkIdentity>());
+            // if (owner || no-owner)
+            MoveToMousePosition();
         }
 
-        private void OnMouseDrag()
+        private void OnMouseUp()
+        {
+            networkPosition.ReleaseMovement();
+        }
+
+        private void MoveToMousePosition()
         {
             var cam = FindObjectOfType<Camera>();
             var mousePosition = cam.ScreenToWorldPoint(Input.mousePosition);
@@ -70,8 +37,6 @@ namespace TabletopCardCompanion
         }
 
         #endregion In-Progress
-
-
 
         // TODO: (?) wrap Send so that it sends to the current owner?
 
@@ -122,10 +87,12 @@ namespace TabletopCardCompanion
             model.LocalScale *= 1f + percent;
         }
 
+        private NetworkPosition networkPosition;
 
         private void Awake()
         {
             RegisterMessageCallbacks();
+            networkPosition = GetComponent<NetworkPosition>();
         }
 
         private void RegisterMessageCallbacks()
