@@ -5,6 +5,7 @@ namespace TabletopCardCompanion.GameElement
     [RequireComponent(typeof(SpriteRenderer))]
     public class CardView : MonoBehaviour
     {
+        // Update View ---------------------------------------------------------
         public void ApplyIsToggled()
         {
             spriteRenderer.color = model.IsToggled ? model.ToggleColor : Color.white;
@@ -16,6 +17,7 @@ namespace TabletopCardCompanion.GameElement
         }
 
 
+        // Initialization ------------------------------------------------------
         private SpriteRenderer spriteRenderer;
         private CardModel model;
 

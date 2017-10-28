@@ -46,19 +46,23 @@ namespace TabletopCardCompanion.GameElement
 
         #endregion In-Progress
 
+
+        // Input Handler (Command Source) --------------------------------------
         private void OnMouseOver()
         {
-            if (Input.GetButtonDown("Jump"))
+            if (Input.GetButtonDown("ToggleColor"))
             {
                 var msg = new NetIdMessage(netId);
                 NetworkManager.singleton.client.Send((short)MsgType.ToggleColor, msg);
             }
+
             if (Input.GetButtonDown("Rotate"))
             {
                 var direction = Input.GetAxis("Rotate") > 0 ? 1 : -1;
                 var msg = new IntNetIdMessage(netId, 60 * direction);
                 NetworkManager.singleton.client.Send((short)MsgType.Rotate, msg);
             }
+
             if (Input.GetButtonDown("Scale"))
             {
                 var percent = Input.GetAxis("Scale") > 0 ? 1f : -1f;
@@ -67,6 +71,8 @@ namespace TabletopCardCompanion.GameElement
             }
         }
 
+
+        // Message Callbacks (Update Model) ------------------------------------
         private static void OnToggleColor(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<NetIdMessage>();
@@ -93,6 +99,8 @@ namespace TabletopCardCompanion.GameElement
             model.LocalScale *= 1f + percent;
         }
 
+
+        // Initialization ------------------------------------------------------
         private Ownership ownership;
         private NetworkPosition networkPosition;
 

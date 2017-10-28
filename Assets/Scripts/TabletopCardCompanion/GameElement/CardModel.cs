@@ -6,6 +6,7 @@ namespace TabletopCardCompanion.GameElement
 {
     public class CardModel : NetworkBehaviour
     {
+        // Data ----------------------------------------------------------------
         [SyncVar(hook = nameof(HookIsToggled))]
         [NonSerialized]
         public bool IsToggled;
@@ -17,6 +18,8 @@ namespace TabletopCardCompanion.GameElement
         [NonSerialized]
         public readonly Color ToggleColor = Color.yellow;
 
+
+        // Hooks (Update View) ------------------------------------------------
         private void HookIsToggled(bool newState)
         {
             IsToggled = newState;
@@ -29,6 +32,8 @@ namespace TabletopCardCompanion.GameElement
             view.ApplyLocalScale();
         }
 
+
+        // Initialization ------------------------------------------------------
         private CardView view;
 
         private void Awake()
@@ -41,6 +46,7 @@ namespace TabletopCardCompanion.GameElement
             base.OnStartServer();
 
             LocalScale = transform.localScale;
+            // toggle state?
         }
 
         public override void OnStartClient()
