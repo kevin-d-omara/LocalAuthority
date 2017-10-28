@@ -50,20 +50,20 @@ namespace TabletopCardCompanion.GameElement
         // Input Handler (Command Source) --------------------------------------
         private void OnMouseOver()
         {
-            if (Input.GetButtonDown("ToggleColor"))
+            if (Input.GetButtonDown(AxisName.ToggleColor))
             {
                 var msg = new NetIdMessage(netId);
                 NetworkManager.singleton.client.Send((short)MsgType.ToggleColor, msg);
             }
 
-            if (Input.GetButtonDown("Rotate"))
+            if (Input.GetButtonDown(AxisName.Rotate))
             {
                 var direction = Input.GetAxis("Rotate") > 0 ? 1 : -1;
                 var msg = new IntNetIdMessage(netId, 60 * direction);
                 NetworkManager.singleton.client.Send((short)MsgType.Rotate, msg);
             }
 
-            if (Input.GetButtonDown("Scale"))
+            if (Input.GetButtonDown(AxisName.Scale))
             {
                 var percent = Input.GetAxis("Scale") > 0 ? 1f : -1f;
                 var msg = new FloatNetIdMessage(netId, 0.1f * percent);
