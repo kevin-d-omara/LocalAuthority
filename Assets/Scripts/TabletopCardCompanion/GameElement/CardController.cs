@@ -71,7 +71,7 @@ namespace TabletopCardCompanion.GameElement
             }
         }
 
-
+        
         // Message Callbacks (Update Model) ------------------------------------
         private static void OnToggleColor(NetworkMessage netMsg)
         {
@@ -116,13 +116,6 @@ namespace TabletopCardCompanion.GameElement
             NetworkServer.RegisterHandler((short)MsgType.ToggleColor, OnToggleColor);
             NetworkServer.RegisterHandler((short)MsgType.Rotate, OnRotate);
             NetworkServer.RegisterHandler((short)MsgType.Scale, OnScale);
-        }
-
-        private enum MsgType : short
-        {
-            ToggleColor = UnityEngine.Networking.MsgType.Highest + 1,
-            Rotate,
-            Scale,
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using TabletopCardCompanion;
 using TabletopCardCompanion.Debug;
 using UnityEngine.Networking;
+using MsgType = TabletopCardCompanion.MsgType;
 
 namespace LocalAuthority.Message
 {
@@ -107,12 +108,6 @@ namespace LocalAuthority.Message
         {
             NetworkServer.RegisterHandler((short)MsgType.RequestOwnership, OnRequestOwnership);
             NetworkServer.RegisterHandler((short)MsgType.ReleaseOwnership, OnReleaseOwnership);
-        }
-
-        private enum MsgType : short
-        {
-            RequestOwnership = UnityEngine.Networking.MsgType.Highest + 10,
-            ReleaseOwnership,
         }
     }
 }
