@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace TabletopCardCompanion
+namespace TabletopCardCompanion.GameElement
 {
     [RequireComponent(typeof(SpriteRenderer))]
     public class CardView : MonoBehaviour

@@ -1,8 +1,7 @@
-﻿using LocalAuthority.Message;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Networking;
 
-namespace LocalAuthority
+namespace LocalAuthority.Message
 {
     [RequireComponent(typeof(Ownership))]
     public class NetworkPosition : NetworkBehaviour

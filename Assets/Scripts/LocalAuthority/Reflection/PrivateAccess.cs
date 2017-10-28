@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace TabletopCardCompanion
+namespace LocalAuthority.Reflection
 {
     public static class PrivateAccess
     {

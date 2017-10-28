@@ -14,8 +14,9 @@
 	· made the messages ArrayList private and added function to call ToString() on objects
 	· using a singleton-esque pattern to no longer require adding DebugStreamer to the scene.
 */
-using UnityEngine;
+
 using System.Collections;
+using UnityEngine;
 
 namespace TabletopCardCompanion.Debug
 {

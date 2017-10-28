@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace TabletopCardCompanion
+namespace TabletopCardCompanion.GameElement
 {
     public class CardModel : NetworkBehaviour
     {

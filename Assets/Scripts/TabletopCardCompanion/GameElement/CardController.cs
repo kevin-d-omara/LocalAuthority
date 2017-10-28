@@ -1,16 +1,14 @@
-﻿using LocalAuthority;
-using LocalAuthority.Message;
-using UnityEditor;
+﻿using LocalAuthority.Message;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace TabletopCardCompanion
+namespace TabletopCardCompanion.GameElement
 {
     [RequireComponent(typeof(Ownership))]
     [RequireComponent(typeof(NetworkPosition))]
     public class CardController : NetworkBehaviour
     {
-        #region In-Progres
+        #region In-Progress
 
         private void OnMouseDown()
         {
