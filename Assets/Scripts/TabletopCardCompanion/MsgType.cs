@@ -5,15 +5,17 @@
     /// </summary>
     public enum MsgType : short
     {
+        // Prevent overwritting Unity built-in message id's.
         Lowest = UnityEngine.Networking.MsgType.Highest + 1,
-
-        // CardController
-        ToggleColor,
-        Rotate,
-        Scale,
 
         // Ownership
         RequestOwnership,
         ReleaseOwnership,
+
+        // CardController
+        ToggleColor,
+        FlipOver,
+        Rotate,
+        Scale,
     }
 }

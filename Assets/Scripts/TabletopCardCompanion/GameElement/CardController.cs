@@ -71,7 +71,7 @@ namespace TabletopCardCompanion.GameElement
             }
         }
 
-        
+
         // Message Callbacks (Update Model) ------------------------------------
         private static void OnToggleColor(NetworkMessage netMsg)
         {
