@@ -1,4 +1,5 @@
-﻿using UnityEngine.Networking;
+﻿using System;
+using UnityEngine.Networking;
 
 namespace TabletopCardCompanion
 {
@@ -9,6 +10,7 @@ namespace TabletopCardCompanion
 
         public NetworkIdentity NetIdentity { get; private set; }
 
+        public static event EventHandler<EventArgs> PlayerInitialized;
 
         // Initialization ------------------------------------------------------
         private void Awake()
@@ -23,6 +25,7 @@ namespace TabletopCardCompanion
             if (NetIdentity.isLocalPlayer)
             {
                 LocalPlayer = this;
+                PlayerInitialized?.Invoke(this, EventArgs.Empty);
             }
         }
     }

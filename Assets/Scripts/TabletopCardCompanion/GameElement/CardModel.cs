@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Networking;
 
 namespace TabletopCardCompanion.GameElement
@@ -7,29 +6,25 @@ namespace TabletopCardCompanion.GameElement
     public class CardModel : NetworkBehaviour
     {
         // Data ----------------------------------------------------------------
-        [SyncVar(hook = nameof(HookIsToggled))]
-        [NonSerialized]
-        public bool IsToggled;
+        public bool IsToggled { get; set; }
 
-        [SyncVar(hook = nameof(HookLocalScale))]
-        [NonSerialized]
-        public Vector3 LocalScale;
+        public Vector3 LocalScale { get; set; }
 
-        [NonSerialized]
-        public readonly Color ToggleColor = Color.yellow;
+        public Color ToggleColor { get; }= Color.yellow;
 
 
-        // Hooks (Update View) ------------------------------------------------
-        private void HookIsToggled(bool newState)
+        // Hooks (Update View) -------------------------------------------------
+        public void HookIsToggled(bool newState)
         {
             IsToggled = newState;
             view.ApplyIsToggled();
         }
 
-        private void HookLocalScale(Vector3 newScale)
+        public void HookLocalScale(Vector3 newScale)
         {
             LocalScale = newScale;
             view.ApplyLocalScale();
+            SetDirtyBit(1);
         }
 
 
@@ -46,7 +41,6 @@ namespace TabletopCardCompanion.GameElement
             base.OnStartServer();
 
             LocalScale = transform.localScale;
-            // toggle state?
         }
 
         public override void OnStartClient()
@@ -55,6 +49,38 @@ namespace TabletopCardCompanion.GameElement
 
             view.ApplyIsToggled();
             view.ApplyLocalScale();
+        }
+
+
+        // Serialization -------------------------------------------------------
+
+        /// <summary>
+        /// Only send SyncVars when a new client joins or the object is first created.
+        /// </summary>
+        public override bool OnSerialize(NetworkWriter writer, bool initialState)
+        {
+            if (initialState)
+            {
+                // SyncVars
+                writer.Write(IsToggled);
+                writer.Write(LocalScale);
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Only overwrite SyncVars when a new client joins or the object is first created.
+        /// </summary>
+        public override void OnDeserialize(NetworkReader reader, bool initialState)
+        {
+            if (initialState)
+            {
+                // SyncVars
+                IsToggled = reader.ReadBoolean();
+                LocalScale = reader.ReadVector3();
+            }
         }
     }
 }

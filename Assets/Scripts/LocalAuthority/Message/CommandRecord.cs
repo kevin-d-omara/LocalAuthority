@@ -1,4 +1,5 @@
-﻿using UnityEngine.Networking;
+﻿using System;
+using UnityEngine.Networking;
 using Object = System.Object;
 
 namespace LocalAuthority.Message
@@ -6,25 +7,29 @@ namespace LocalAuthority.Message
     /// <summary>
     /// Container class for recording commands send by client objects.
     /// </summary>
+    [Serializable]
     public struct CommandRecord
     {
         // Data ----------------------------------------------------------------
         /// <summary>
-        /// Network Id of the calling object.
+        /// Network Id of the calling player.
         /// </summary>
-        public NetworkInstanceId NetId { get; }
+        public NetworkInstanceId NetId { get { return netId; } private set { netId = value; } }
 
         /// <summary>
         /// N'th command from the calling object.
         /// </summary>
-        public uint CmdNumber { get; }
+        public uint CmdNumber { get { return cmdNumber; } private set { cmdNumber = value; } }
+
+        private NetworkInstanceId netId;
+        private uint cmdNumber;
 
 
         // Methods -------------------------------------------------------------
         public CommandRecord(NetworkInstanceId netId, uint cmdNumber)
         {
-            NetId = netId;
-            CmdNumber = cmdNumber;
+            this.netId = netId;
+            this.cmdNumber = cmdNumber;
         }
 
         /// <summary>
@@ -43,7 +48,7 @@ namespace LocalAuthority.Message
         public void Write(NetworkWriter writer)
         {
             writer.Write(NetId);
-            writer.Write(CmdNumber);
+            writer.WritePackedUInt32(CmdNumber);
         }
 
 
