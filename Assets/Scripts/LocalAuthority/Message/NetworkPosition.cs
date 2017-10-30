@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using TabletopCardCompanion.Debug;
+using UnityEngine;
 using UnityEngine.Networking;
 using MsgType = TabletopCardCompanion.MsgType;
 
@@ -28,8 +29,10 @@ namespace LocalAuthority.Message
                 targetSyncPosition = transform.position;
 
                 // Periodically broadcast.
-                if (true)
+                var deltaTime = Time.time - LastBroadcastTime;
+                if (deltaTime > SendRate)
                 {
+                    LastBroadcastTime = Time.time;
                     BroadcastCurrentTransform();
                 }
             }
@@ -45,6 +48,8 @@ namespace LocalAuthority.Message
             var msg = NewMessage<Vector3CommandRecordMessage>();
             msg.value = transform.position;
             SendCommand((short)MsgType.UpdateTargetSyncPosition, msg);
+
+            DebugStreamer.AddMessage("Sent! " + Time.time);
         }
 
         private static void MsgCmdUpdateTargetSyncPosition(NetworkMessage netMsg)
@@ -67,8 +72,47 @@ namespace LocalAuthority.Message
 
         // Data ----------------------------------------------------------------
 
+        /// <summary>
+        /// The target position interpolating towards.
+        /// </summary>
+        public Vector3 TargetSyncPosition { get { return targetSyncPosition; } set { targetSyncPosition = value; } }
+
+        /// <summary>
+        /// Amount of time between network updates.
+        /// </summary>
+        public float SendRate { get { return 1f / networkSendRate; } }
+
+        /// <summary>
+        /// Number of network updates per second.
+        /// </summary>
+        public int NetworkSendRate { get { return networkSendRate; } set { networkSendRate = value >= 1 ? value : 1; } }
+
+        /// <summary>
+        /// If a movement update puts an object further from its current position that this value, it will snap to the position instead of moving smoothly.
+        /// </summary>
+        public float SnapThreshold { get { return snapThreshold; } set { snapThreshold = value; } }
+
+        /// <summary>
+        /// The most recent time when a movement synchronization packet arrived for this object.
+        /// </summary>
+        public float LastSyncTime { get; private set; }
+
+        /// <summary>
+        /// The most recent time when a movement synchronization packet was sent from this object.
+        /// </summary>
+        public float LastBroadcastTime { get; private set; }
+
         [SyncVar(hook = nameof(HookTargetSyncPosition))]
         private Vector3 targetSyncPosition;
+
+        [SerializeField]
+        [Range(1,60)]
+        [Tooltip("Number of network updates per second.")]
+        private int networkSendRate = 9;
+
+        [SerializeField]
+        [Tooltip("If a movement update puts an object further from its current position that this value, it will snap to the position instead of moving smoothly.")]
+        private float snapThreshold = 5f;
 
 
         // Initialization ------------------------------------------------------
