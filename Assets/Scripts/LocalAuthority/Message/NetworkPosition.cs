@@ -25,8 +25,6 @@ namespace LocalAuthority.Message
         {
             if (ownership.IsOwnedByLocal)
             {
-                targetSyncPosition = transform.position;
-
                 // Periodically broadcast.
                 var deltaTime = Time.time - LastBroadcastTime;
                 if (deltaTime > SendRate)
@@ -44,14 +42,13 @@ namespace LocalAuthority.Message
 
         private void BroadcastCurrentTransform()
         {
-            var msg = NewMessage<Vector3CommandRecordMessage>();
-            msg.value = transform.position;
+            var msg = new Vector3NetIdMessage(netId, transform.position);
             SendCommand((short)MsgType.UpdateTargetSyncPosition, msg);
         }
 
         private static void CmdUpdateTargetSyncPosition(NetworkMessage netMsg)
         {
-            var msg = netMsg.ReadMessage<Vector3CommandRecordMessage>();
+            var msg = netMsg.ReadMessage<Vector3NetIdMessage>();
             var netPosition = NetworkingUtilities.FindLocalComponent<NetworkPosition>(msg.netId);
             var syncPosition = msg.value;
 

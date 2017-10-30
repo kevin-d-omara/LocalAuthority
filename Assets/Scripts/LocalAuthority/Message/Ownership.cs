@@ -70,30 +70,31 @@ namespace LocalAuthority.Message
         private static void CmdRequestOwnership(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<TwoNetIdMessage>();
-            var ownable = NetworkingUtilities.FindLocalComponent<Ownership>(msg.netId);
+            var ownership = NetworkingUtilities.FindLocalComponent<Ownership>(msg.netId);
             var requester = NetworkingUtilities.FindLocalObject(msg.netId2);
 
             // Prevent players from stealing ownership.
-            if (ownable.Owner == null)
+            if (ownership.Owner == null)
             {
-                ownable.Owner = requester.GetComponent<NetworkIdentity>();
+                ownership.Owner = requester.GetComponent<NetworkIdentity>();
             }
         }
 
         private static void CmdReleaseOwnership(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<TwoNetIdMessage>();
-            var ownable = NetworkingUtilities.FindLocalComponent<Ownership>(msg.netId);
+            var ownership = NetworkingUtilities.FindLocalComponent<Ownership>(msg.netId);
             var requester = NetworkingUtilities.FindLocalObject(msg.netId2);
 
-            if (ownable.Owner == requester.GetComponent<NetworkIdentity>())
+            if (ownership.Owner == requester.GetComponent<NetworkIdentity>())
             {
-                ownable.Owner = null;
+                ownership.Owner = null;
             }
         }
 
 
         // Initialization ------------------------------------------------------
+        [SyncVar]
         private NetworkIdentity owner;
 
         protected override void RegisterCallbacks()
