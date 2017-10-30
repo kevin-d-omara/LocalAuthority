@@ -12,6 +12,9 @@
         RequestOwnership,
         ReleaseOwnership,
 
+        // NetworkPosition
+        UpdateTargetSyncPosition,
+
         // CardController
         ToggleColor,
         FlipOver,

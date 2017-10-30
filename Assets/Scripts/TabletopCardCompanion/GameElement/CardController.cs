@@ -18,20 +18,17 @@ namespace TabletopCardCompanion.GameElement
 
         private void OnMouseDrag()
         {
-            if (ownership.IsOwnedByLocal || ownership.IsOwnedByNone)
+            if (ownership.IsOwnedByLocal)
             {
                 MoveToMousePosition();
-                // ^^ update NetworkPosition.TargetSyncPosition?
             }
         }
 
         private void OnMouseUp()
         {
-            if (ownership.IsOwnedByLocal || ownership.IsOwnedByNone)
+            if (ownership.IsOwnedByLocal)
             {
-                ownership.ReleaseOwnership();
-                // broadcast final position
-                // udpate targetsyncposition
+                networkPosition.ReleaseOwnership();
             }
         }
 
@@ -102,7 +99,7 @@ namespace TabletopCardCompanion.GameElement
             model.HookLocalScale(newScale);
         }
 
-        // Message RPC's (Update Model) ----------------------------------------
+        // Message RPCs (Update Model) -----------------------------------------
         [ClientRpc]
         private void RpcToggleColor(NetworkInstanceId requesterNetId)
         {

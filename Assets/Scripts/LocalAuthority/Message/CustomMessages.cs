@@ -1,5 +1,4 @@
-﻿using TabletopCardCompanion;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Networking;
 
 namespace LocalAuthority.Message
@@ -252,4 +251,29 @@ namespace LocalAuthority.Message
         }
     }
 
+    public class Vector3CommandRecordMessage : CommandRecordMessage
+    {
+        public Vector3 value;
+
+        public Vector3CommandRecordMessage()
+        {
+        }
+
+        public Vector3CommandRecordMessage(NetworkInstanceId id, CommandRecord cmdRecord, Vector3 value) : base(id, cmdRecord)
+        {
+            this.value = value;
+        }
+
+        public override void Deserialize(NetworkReader reader)
+        {
+            base.Deserialize(reader);
+            value = reader.ReadVector3();
+        }
+
+        public override void Serialize(NetworkWriter writer)
+        {
+            base.Serialize(writer);
+            writer.Write(value);
+        }
+    }
 }

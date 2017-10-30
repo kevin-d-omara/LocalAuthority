@@ -10,7 +10,7 @@ namespace LocalAuthority.Message
     /// authoritative way to track and change ownership.
     /// </summary>
     /// <remarks>It is required that the Player prefab has "PlayerInfo" attached.</remarks>
-    public class Ownership : NetworkBehaviour
+    public class Ownership : LocalAuthorityBehaviour
     {
         /// <summary>
         /// NetworkIdentity attached to the owning player, or null if no player has ownership.
@@ -48,7 +48,10 @@ namespace LocalAuthority.Message
         public void RequestOwnership()
         {
             var msg = new TwoNetIdMessage(netId, PlayerInfo.LocalPlayer.netId);
-            NetworkManager.singleton.client.Send((short)MsgType.RequestOwnership, msg);
+            SendCommand((short)MsgType.RequestOwnership, msg);
+
+            // Give immediate control (client-side prediction).
+            owner = PlayerInfo.LocalPlayer.NetIdentity;
         }
 
         /// <summary>
@@ -57,22 +60,28 @@ namespace LocalAuthority.Message
         public void ReleaseOwnership()
         {
             var msg = new TwoNetIdMessage(netId, PlayerInfo.LocalPlayer.netId);
-            NetworkManager.singleton.client.Send((short)MsgType.ReleaseOwnership, msg);
+            SendCommand((short)MsgType.ReleaseOwnership, msg);
+
+            // Immediately release control (client-side prediction).
+            owner = null;
         }
 
-        private static void OnRequestOwnership(NetworkMessage netMsg)
+
+        // Message Commands ----------------------------------------------------
+        private static void MsgCmdRequestOwnership(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<TwoNetIdMessage>();
             var ownable = NetworkingUtilities.FindLocalComponent<Ownership>(msg.netId);
             var requester = NetworkingUtilities.FindLocalObject(msg.netId2);
 
+            // Prevent players from stealing ownership.
             if (ownable.Owner == null)
             {
                 ownable.Owner = requester.GetComponent<NetworkIdentity>();
             }
         }
 
-        private static void OnReleaseOwnership(NetworkMessage netMsg)
+        private static void MsgCmdReleaseOwnership(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<TwoNetIdMessage>();
             var ownable = NetworkingUtilities.FindLocalComponent<Ownership>(msg.netId);
@@ -85,29 +94,22 @@ namespace LocalAuthority.Message
         }
 
 
-
+        // Initialization ------------------------------------------------------
         [SyncVar(hook = nameof(HookOwner))]
         private NetworkIdentity owner;
 
+        // TODO: remove hook, just for debugging right now
         private void HookOwner(NetworkIdentity networkIdentity)
         {
-            // TODO: broadcast event (maybe use unity networking SyncEvent?) <------------------------------------------
             owner = networkIdentity;
             var str = owner != null ? owner.netId.ToString() : " ";
             DebugStreamer.AddMessage("new owner: " + str);
         }
 
-
-
-        private void Awake()
+        protected override void RegisterCallbacks()
         {
-            RegisterMessageCallbacks();
-        }
-
-        private void RegisterMessageCallbacks()
-        {
-            NetworkServer.RegisterHandler((short)MsgType.RequestOwnership, OnRequestOwnership);
-            NetworkServer.RegisterHandler((short)MsgType.ReleaseOwnership, OnReleaseOwnership);
+            RegisterCallback((short)MsgType.RequestOwnership, MsgCmdRequestOwnership);
+            RegisterCallback((short)MsgType.ReleaseOwnership, MsgCmdReleaseOwnership);
         }
     }
 }
