@@ -13,7 +13,7 @@ namespace TabletopCardCompanion.GameElement
 
         private void OnMouseDown()
         {
-            ownership.RequestOwnership();
+            networkPosition.BeginMovement();
         }
 
         private void OnMouseDrag()
@@ -28,7 +28,7 @@ namespace TabletopCardCompanion.GameElement
         {
             if (ownership.IsOwnedByLocal)
             {
-                networkPosition.ReleaseOwnership();
+                networkPosition.EndMovement();
             }
         }
 

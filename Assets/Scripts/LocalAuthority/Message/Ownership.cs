@@ -32,7 +32,6 @@ namespace LocalAuthority.Message
             get { return Owner != null && Owner != PlayerInfo.LocalPlayer.NetIdentity; }
         }
 
-
         /// <summary>
         /// True if owned by no player.
         /// </summary>
@@ -50,7 +49,10 @@ namespace LocalAuthority.Message
             SendCommand((short)MsgType.RequestOwnership, msg);
 
             // Give immediate control (client-side prediction).
-            owner = PlayerInfo.LocalPlayer.NetIdentity;
+            if (IsOwnedByNone)
+            {
+                owner = PlayerInfo.LocalPlayer.NetIdentity;
+            }
         }
 
         /// <summary>
@@ -62,7 +64,10 @@ namespace LocalAuthority.Message
             SendCommand((short)MsgType.ReleaseOwnership, msg);
 
             // Immediately release control (client-side prediction).
-            owner = null;
+            if (IsOwnedByLocal)
+            {
+                owner = null;
+            }
         }
 
 

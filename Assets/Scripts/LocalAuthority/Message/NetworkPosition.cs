@@ -5,15 +5,26 @@ using MsgType = TabletopCardCompanion.MsgType;
 namespace LocalAuthority.Message
 {
     /// <summary>
-    /// Like Unity's <see cref="NetworkTransform"/>, except with local authority enabled.
+    /// Enables any client to move the object and update other clients. To broadcast a continuous movement:
+    ///     - call <see cref="BeginMovement"/>
+    ///     - update transform.position over as many frames as you'd like
+    ///     - call <see cref="EndMovement"/>
+    ///
+    ///     - note: to prevent movement when ownership is denied by the server, wrap movement updates in:
+    ///             if (ownership.IsOwnedByLocal)
+    ///             {
+    ///                 // update transform.position
+    ///             }
     /// </summary>
     [RequireComponent(typeof(Ownership))]
     public class NetworkPosition : LocalAuthorityBehaviour
     {
-        /// <summary>
-        /// Wrapper for <see cref="Ownership"/> to ensure final targetSyncPosition is sent.
-        /// </summary>
-        public void ReleaseOwnership()
+        public void BeginMovement()
+        {
+            ownership.RequestOwnership();
+        }
+
+        public void EndMovement()
         {
             targetSyncPosition = transform.position;
             BroadcastCurrentTransform();
