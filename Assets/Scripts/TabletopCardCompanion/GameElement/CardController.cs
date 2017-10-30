@@ -53,7 +53,7 @@ namespace TabletopCardCompanion.GameElement
                 ToggleColor();
 
                 var msg = NewMessage<CommandRecordMessage>();
-                SendCommand((short) MsgType.ToggleColor, msg);
+                SendCommand((short)MsgType.ToggleColor, msg);
             }
 
             if (Input.GetButtonDown(AxisName.Rotate))
@@ -65,7 +65,7 @@ namespace TabletopCardCompanion.GameElement
 
                 var msg = NewMessage<IntCommandRecordMessage>();    // varargs constructor??
                 msg.value = degrees;
-                SendCommand((short) MsgType.Rotate, msg);
+                SendCommand((short)MsgType.Rotate, msg);
             }
 
             if (Input.GetButtonDown(AxisName.Scale))
@@ -77,7 +77,7 @@ namespace TabletopCardCompanion.GameElement
 
                 var msg = NewMessage<FloatCommandRecordMessage>();
                 msg.value = percent;
-                SendCommand((short) MsgType.Scale, msg);
+                SendCommand((short)MsgType.Scale, msg);
             }
         }
 
@@ -90,7 +90,7 @@ namespace TabletopCardCompanion.GameElement
 
         private void Rotate(int degrees)
         {
-            model.transform.Rotate(Vector3.forward, degrees);
+            model.HookRotation(degrees);
         }
 
         private void Scale(float percent)

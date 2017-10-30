@@ -1,5 +1,4 @@
 ﻿using TabletopCardCompanion;
-using TabletopCardCompanion.Debug;
 using UnityEngine.Networking;
 using MsgType = TabletopCardCompanion.MsgType;
 
@@ -95,16 +94,7 @@ namespace LocalAuthority.Message
 
 
         // Initialization ------------------------------------------------------
-        [SyncVar(hook = nameof(HookOwner))]
         private NetworkIdentity owner;
-
-        // TODO: remove hook, just for debugging right now
-        private void HookOwner(NetworkIdentity networkIdentity)
-        {
-            owner = networkIdentity;
-            var str = owner != null ? owner.netId.ToString() : " ";
-            DebugStreamer.AddMessage("new owner: " + str);
-        }
 
         protected override void RegisterCallbacks()
         {

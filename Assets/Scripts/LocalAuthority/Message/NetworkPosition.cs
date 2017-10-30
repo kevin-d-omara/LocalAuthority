@@ -1,5 +1,4 @@
-﻿using TabletopCardCompanion.Debug;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Networking;
 using MsgType = TabletopCardCompanion.MsgType;
 
@@ -48,8 +47,6 @@ namespace LocalAuthority.Message
             var msg = NewMessage<Vector3CommandRecordMessage>();
             msg.value = transform.position;
             SendCommand((short)MsgType.UpdateTargetSyncPosition, msg);
-
-            DebugStreamer.AddMessage("Sent! " + Time.time);
         }
 
         private static void CmdUpdateTargetSyncPosition(NetworkMessage netMsg)

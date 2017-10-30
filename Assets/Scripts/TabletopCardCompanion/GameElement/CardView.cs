@@ -16,6 +16,11 @@ namespace TabletopCardCompanion.GameElement
             transform.localScale = model.LocalScale;
         }
 
+        public void ApplyRotation()
+        {
+            model.transform.rotation = Quaternion.Euler(0f, 0f, model.RotationDegrees);
+        }
+
 
         // Initialization ------------------------------------------------------
         private SpriteRenderer spriteRenderer;

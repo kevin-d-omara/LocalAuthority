@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using TabletopCardCompanion.Debug;
+using UnityEngine;
 using UnityEngine.Networking;
 
 namespace TabletopCardCompanion.GameElement
@@ -10,7 +11,9 @@ namespace TabletopCardCompanion.GameElement
 
         public Vector3 LocalScale { get; set; }
 
-        public Color ToggleColor { get; }= Color.yellow;
+        public float RotationDegrees { get; set; }
+
+        public Color ToggleColor { get; } = Color.yellow;
 
 
         // Hooks (Update View) -------------------------------------------------
@@ -24,7 +27,12 @@ namespace TabletopCardCompanion.GameElement
         {
             LocalScale = newScale;
             view.ApplyLocalScale();
-            SetDirtyBit(1);
+        }
+
+        public void HookRotation(float degrees)
+        {
+            RotationDegrees += degrees;
+            view.ApplyRotation();
         }
 
 
@@ -41,6 +49,7 @@ namespace TabletopCardCompanion.GameElement
             base.OnStartServer();
 
             LocalScale = transform.localScale;
+            RotationDegrees = transform.rotation.z;
         }
 
         public override void OnStartClient()
@@ -49,6 +58,7 @@ namespace TabletopCardCompanion.GameElement
 
             view.ApplyIsToggled();
             view.ApplyLocalScale();
+            view.ApplyRotation();
         }
 
 
@@ -64,6 +74,7 @@ namespace TabletopCardCompanion.GameElement
                 // SyncVars
                 writer.Write(IsToggled);
                 writer.Write(LocalScale);
+                writer.Write(RotationDegrees);
                 return true;
             }
 
@@ -80,6 +91,7 @@ namespace TabletopCardCompanion.GameElement
                 // SyncVars
                 IsToggled = reader.ReadBoolean();
                 LocalScale = reader.ReadVector3();
+                RotationDegrees = reader.ReadSingle();
             }
         }
     }
