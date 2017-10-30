@@ -125,7 +125,7 @@ namespace TabletopCardCompanion.GameElement
         }
 
         // Message Commands ----------------------------------------------------
-        private static void MsgCmdToggleColor(NetworkMessage netMsg)
+        private static void CmdToggleColor(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<CommandRecordMessage>();
             var controller = NetworkingUtilities.FindLocalComponent<CardController>(msg.netId);
@@ -133,7 +133,7 @@ namespace TabletopCardCompanion.GameElement
             controller.RpcToggleColor(msg.cmdRecord.NetId);
         }
 
-        private static void MsgCmdRotate(NetworkMessage netMsg)
+        private static void CmdRotate(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<IntCommandRecordMessage>();
             var controller = NetworkingUtilities.FindLocalComponent<CardController>(msg.netId);
@@ -141,7 +141,7 @@ namespace TabletopCardCompanion.GameElement
             controller.RpcRotate(msg.cmdRecord.NetId, msg.value);
         }
 
-        private static void MsgCmdScale(NetworkMessage netMsg)
+        private static void CmdScale(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<FloatCommandRecordMessage>();
             var controller = NetworkingUtilities.FindLocalComponent<CardController>(msg.netId);
@@ -149,7 +149,7 @@ namespace TabletopCardCompanion.GameElement
             controller.RpcScale(msg.cmdRecord.NetId, msg.value);
         }
 
-        private static void MsgCmdRotate2(IntCommandRecordMessage msg, CardController controller)
+        private static void CmdRotate2(IntCommandRecordMessage msg, CardController controller)
         {
             controller.RpcRotate(msg.cmdRecord.NetId, msg.value);
         }
@@ -169,9 +169,9 @@ namespace TabletopCardCompanion.GameElement
 
         protected override void RegisterCallbacks()
         {
-            RegisterCallback((short)MsgType.ToggleColor, MsgCmdToggleColor);
-            RegisterCallback((short)MsgType.Rotate, MsgCmdRotate);
-            RegisterCallback((short)MsgType.Scale, MsgCmdScale);
+            RegisterCallback((short)MsgType.ToggleColor, CmdToggleColor);
+            RegisterCallback((short)MsgType.Rotate, CmdRotate);
+            RegisterCallback((short)MsgType.Scale, CmdScale);
         }
     }
 }

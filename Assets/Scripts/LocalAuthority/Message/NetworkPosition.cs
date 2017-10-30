@@ -52,7 +52,7 @@ namespace LocalAuthority.Message
             DebugStreamer.AddMessage("Sent! " + Time.time);
         }
 
-        private static void MsgCmdUpdateTargetSyncPosition(NetworkMessage netMsg)
+        private static void CmdUpdateTargetSyncPosition(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<Vector3CommandRecordMessage>();
             var netPosition = NetworkingUtilities.FindLocalComponent<NetworkPosition>(msg.netId);
@@ -133,7 +133,7 @@ namespace LocalAuthority.Message
 
         protected override void RegisterCallbacks()
         {
-            RegisterCallback((short)MsgType.UpdateTargetSyncPosition, MsgCmdUpdateTargetSyncPosition);
+            RegisterCallback((short)MsgType.UpdateTargetSyncPosition, CmdUpdateTargetSyncPosition);
         }
     }
 }

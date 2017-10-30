@@ -68,7 +68,7 @@ namespace LocalAuthority.Message
 
 
         // Message Commands ----------------------------------------------------
-        private static void MsgCmdRequestOwnership(NetworkMessage netMsg)
+        private static void CmdRequestOwnership(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<TwoNetIdMessage>();
             var ownable = NetworkingUtilities.FindLocalComponent<Ownership>(msg.netId);
@@ -81,7 +81,7 @@ namespace LocalAuthority.Message
             }
         }
 
-        private static void MsgCmdReleaseOwnership(NetworkMessage netMsg)
+        private static void CmdReleaseOwnership(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<TwoNetIdMessage>();
             var ownable = NetworkingUtilities.FindLocalComponent<Ownership>(msg.netId);
@@ -108,8 +108,8 @@ namespace LocalAuthority.Message
 
         protected override void RegisterCallbacks()
         {
-            RegisterCallback((short)MsgType.RequestOwnership, MsgCmdRequestOwnership);
-            RegisterCallback((short)MsgType.ReleaseOwnership, MsgCmdReleaseOwnership);
+            RegisterCallback((short)MsgType.RequestOwnership, CmdRequestOwnership);
+            RegisterCallback((short)MsgType.ReleaseOwnership, CmdReleaseOwnership);
         }
     }
 }
