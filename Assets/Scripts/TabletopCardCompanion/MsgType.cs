@@ -1,24 +1,24 @@
 ﻿namespace TabletopCardCompanion
 {
     /// <summary>
-    /// Container Enum for all TabletopCardCompanion message types.
+    /// Container for TabletopCardCompanion message types.
     /// </summary>
     public enum MsgType : short
     {
-        // Prevent overwritting Unity built-in message id's.
-        Lowest = UnityEngine.Networking.MsgType.Highest + 1,
-
-        // Ownership
-        RequestOwnership,
-        ReleaseOwnership,
-
-        // NetworkPosition
-        UpdateTargetSyncPosition,
+        /// <summary>
+        /// Message ids start at this value to prevent overwritting Local Authority and Unity message ids.
+        /// </summary>
+        Lowest = LocalAuthority.Message.MsgType.Highest + 1,
 
         // CardController
         ToggleColor,
         FlipOver,
         Rotate,
         Scale,
+
+        /// <summary>
+        /// The highest value of TabletopCardCompanion message ids. Imported assets must be above this value.
+        /// </summary>
+        Highest,
     }
 }

@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
-using MsgType = TabletopCardCompanion.MsgType;
 
 namespace LocalAuthority.Message
 {

@@ -62,7 +62,7 @@ namespace LocalAuthority
         /// Registering on the server enables <see cref="SendCommand"/> to reach the server, like a [Command].
         /// Registering on the client enables <paramref name="callback"/> to reach the clients, like a [ClientRpc].
         /// </summary>
-        /// <param name="msgType">Unique number specific to this callback. <see cref="TabletopCardCompanion.MsgType"/></param>
+        /// <param name="msgType">Unique number specific to this callback. <see cref="Message.MsgType"/></param>
         /// <param name="callback">The function contain server code, like a [Command].</param>
         /// <param name="registerClient">True if the client should be able to receive the callback, like a [ClientRpc].</param>
         protected void RegisterCallback(short msgType, NetworkMessageDelegate callback, bool registerClient = false)
