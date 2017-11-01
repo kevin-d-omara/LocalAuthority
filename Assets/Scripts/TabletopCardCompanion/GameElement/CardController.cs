@@ -53,8 +53,7 @@ namespace TabletopCardCompanion.GameElement
             {
                 ToggleColor();
 
-                var msg = NewMessage<CommandRecordMessage>();
-                SendCommand((short)MsgType.ToggleColor, msg);
+                SendCommand<NetIdMessage>((short) MsgType.ToggleColor);
             }
 
             if (Input.GetButtonDown(AxisName.Rotate))
@@ -64,9 +63,7 @@ namespace TabletopCardCompanion.GameElement
 
                 Rotate(degrees);
 
-                var msg = NewMessage<IntCommandRecordMessage>();    // varargs constructor??
-                msg.value = degrees;
-                SendCommand((short)MsgType.Rotate, msg);
+                SendCommand<IntNetIdMessage>((short)MsgType.Rotate, degrees);
             }
 
             if (Input.GetButtonDown(AxisName.Scale))
@@ -76,9 +73,7 @@ namespace TabletopCardCompanion.GameElement
 
                 Scale(percent);
 
-                var msg = NewMessage<FloatCommandRecordMessage>();
-                msg.value = percent;
-                SendCommand((short)MsgType.Scale, msg);
+                SendCommand<FloatNetIdMessage>((short)MsgType.Scale, percent);
             }
         }
 
@@ -103,7 +98,7 @@ namespace TabletopCardCompanion.GameElement
         // Commands ------------------------------------------------------------
         private static void CmdToggleColor(NetworkMessage netMsg)
         {
-            var msg = netMsg.ReadMessage<CommandRecordMessage>();
+            var msg = netMsg.ReadMessage<NetIdMessage>();
             var obj = NetworkingUtilities.FindLocalComponent<CardController>(msg.netId);
             Action action = () => obj.ToggleColor();
             obj.RunNetworkAction(action, netMsg, msg, ignoreSender: true);
@@ -111,7 +106,7 @@ namespace TabletopCardCompanion.GameElement
 
         private static void CmdRotate(NetworkMessage netMsg)
         {
-            var msg = netMsg.ReadMessage<IntCommandRecordMessage>();
+            var msg = netMsg.ReadMessage<IntNetIdMessage>();
             var obj = NetworkingUtilities.FindLocalComponent<CardController>(msg.netId);
             Action action = () => obj.Rotate(msg.value);
             obj.RunNetworkAction(action, netMsg, msg, ignoreSender: true);
@@ -119,7 +114,7 @@ namespace TabletopCardCompanion.GameElement
 
         private static void CmdScale(NetworkMessage netMsg)
         {
-            var msg = netMsg.ReadMessage<FloatCommandRecordMessage>();
+            var msg = netMsg.ReadMessage<FloatNetIdMessage>();
             var obj = NetworkingUtilities.FindLocalComponent<CardController>(msg.netId);
             Action action = () => obj.Scale(msg.value);
             obj.RunNetworkAction(action, netMsg, msg, ignoreSender: true);

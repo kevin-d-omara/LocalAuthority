@@ -9,7 +9,7 @@ namespace LocalAuthority.Message
     public class NetIdMessage : MessageBase
     {
         /// <summary>
-        /// The NetworkInstanceId of the object that sent this message.
+        /// The NetworkInstanceId of the object that sent this message. Used to local the object within the scene.
         /// </summary>
         public NetworkInstanceId netId;
 
@@ -21,6 +21,12 @@ namespace LocalAuthority.Message
         {
             netId = id;
         }
+
+        /// <summary>
+        /// Set all class fields, except netId.
+        /// </summary>
+        /// <param name="args">Arguments to the full constructor, in that order, with netId omitted.</param>
+        public virtual void VarargsSetter(params object[] args) { }
 
         public override void Deserialize(NetworkReader reader)
         {
@@ -44,6 +50,11 @@ namespace LocalAuthority.Message
         public FloatNetIdMessage(NetworkInstanceId id, float value) : base(id)
         {
             this.value = value;
+        }
+
+        public override void VarargsSetter(params object[] args)
+        {
+            value = (float) args[0];
         }
 
         public override void Deserialize(NetworkReader reader)
@@ -72,6 +83,11 @@ namespace LocalAuthority.Message
             this.value = value;
         }
 
+        public override void VarargsSetter(params object[] args)
+        {
+            value = (int) args[0];
+        }
+
         public override void Deserialize(NetworkReader reader)
         {
             base.Deserialize(reader);
@@ -98,6 +114,11 @@ namespace LocalAuthority.Message
             this.value = value;
         }
 
+        public override void VarargsSetter(params object[] args)
+        {
+            value = (Vector2) args[0];
+        }
+
         public override void Deserialize(NetworkReader reader)
         {
             base.Deserialize(reader);
@@ -119,10 +140,14 @@ namespace LocalAuthority.Message
         {
         }
 
-
         public Vector3NetIdMessage(NetworkInstanceId id, Vector3 value) : base(id)
         {
             this.value = value;
+        }
+
+        public override void VarargsSetter(params object[] args)
+        {
+            value = (Vector3)args[0];
         }
 
         public override void Deserialize(NetworkReader reader)
@@ -149,6 +174,11 @@ namespace LocalAuthority.Message
         public TwoNetIdMessage(NetworkInstanceId id, NetworkInstanceId id2) : base(id)
         {
             netId2 = id2;
+        }
+
+        public override void VarargsSetter(params object[] args)
+        {
+            netId2 = (NetworkInstanceId) args[0];
         }
 
         public override void Deserialize(NetworkReader reader)
@@ -186,6 +216,11 @@ namespace LocalAuthority.Message
             this.cmdRecord = cmdRecord;
         }
 
+        public override void VarargsSetter(params object[] args)
+        {
+            cmdRecord = (CommandRecord) args[0];
+        }
+
         public override void Deserialize(NetworkReader reader)
         {
             base.Deserialize(reader);
@@ -210,6 +245,12 @@ namespace LocalAuthority.Message
         public FloatCommandRecordMessage(NetworkInstanceId id, CommandRecord cmdRecord, float value) : base(id, cmdRecord)
         {
             this.value = value;
+        }
+
+        public override void VarargsSetter(params object[] args)
+        {
+            base.VarargsSetter(args);
+            value = (float) args[1];
         }
 
         public override void Deserialize(NetworkReader reader)
@@ -238,6 +279,12 @@ namespace LocalAuthority.Message
             this.value = value;
         }
 
+        public override void VarargsSetter(params object[] args)
+        {
+            base.VarargsSetter(args);
+            value = (int) args[1];
+        }
+
         public override void Deserialize(NetworkReader reader)
         {
             base.Deserialize(reader);
@@ -262,6 +309,12 @@ namespace LocalAuthority.Message
         public Vector3CommandRecordMessage(NetworkInstanceId id, CommandRecord cmdRecord, Vector3 value) : base(id, cmdRecord)
         {
             this.value = value;
+        }
+
+        public override void VarargsSetter(params object[] args)
+        {
+            base.VarargsSetter(args);
+            value = (Vector3) args[1];
         }
 
         public override void Deserialize(NetworkReader reader)

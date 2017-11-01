@@ -44,8 +44,7 @@ namespace LocalAuthority.Message
         /// </summary>
         public void RequestOwnership()
         {
-            var msg = new TwoNetIdMessage(netId, PlayerInfo.LocalPlayer.netId);
-            SendCommand((short)MsgType.RequestOwnership, msg);
+            SendCommand<TwoNetIdMessage>((short) MsgType.RequestOwnership, PlayerInfo.LocalPlayer.netId);
 
             // Give immediate control (client-side prediction).
             if (IsOwnedByNone)
@@ -59,8 +58,7 @@ namespace LocalAuthority.Message
         /// </summary>
         public void ReleaseOwnership()
         {
-            var msg = new TwoNetIdMessage(netId, PlayerInfo.LocalPlayer.netId);
-            SendCommand((short)MsgType.ReleaseOwnership, msg);
+            SendCommand<TwoNetIdMessage>((short)MsgType.RequestOwnership, PlayerInfo.LocalPlayer.netId);
 
             // Immediately release control (client-side prediction).
             if (IsOwnedByLocal)
@@ -78,7 +76,7 @@ namespace LocalAuthority.Message
             var requester = NetworkingUtilities.FindLocalObject(msg.netId2);
 
             // Prevent players from stealing ownership.
-            if (ownership.Owner == null)
+            if (ownership.IsOwnedByNone)
             {
                 ownership.Owner = requester.GetComponent<NetworkIdentity>();
             }

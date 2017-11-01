@@ -5,17 +5,22 @@ using UnityEngine.Networking;
 
 namespace LocalAuthority
 {
+    /// <summary>
+    /// Extend this class instead of <see cref="NetworkBehaviour"/> to enable message-based commands.
+    /// </summary>
+    // TODO: Better class description.
     public abstract class LocalAuthorityBehaviour : NetworkBehaviour
     {
-        protected readonly CommandHistory CmdHistory = new CommandHistory();
-
-
         /// <summary>
         /// Run a message-based command on the server.
         /// </summary>
+        /// <param name="values">Values to load the message with, besides netId</param>
         /// <returns>True if the command was sent.</returns>
-        protected bool SendCommand(short msgType, MessageBase msg)
+        protected bool SendCommand<TMsg>(short msgType, params object[] values) where TMsg : NetIdMessage, new()
         {
+            var msg = new TMsg();
+            msg.netId = netId;
+            msg.VarargsSetter(values);
             return NetworkManager.singleton.client.Send(msgType, msg);
         }
 
@@ -38,32 +43,27 @@ namespace LocalAuthority
             action();
         }
 
-        /// <summary>
-        /// Return a new <see cref="CommandRecordMessage"/> initialized with 'netId' and 'cmdRecord'.
-        /// </summary>
-        protected T NewMessage<T>() where T : CommandRecordMessage, new()
+
+        protected virtual void Awake()
         {
-            var record = CmdHistory.NewRecord();
-            var msg = new T();
-            msg.netId = netId;
-            msg.cmdRecord = record;
-            return msg;
+            RegisterCallbacks();
         }
 
         /// <summary>
         /// Fill this with calls to:
-        ///     RegisterCallback(CustomMessageType, SomeCallback)
+        ///     RegisterCallback(CustomMessageType, SomeCallback, registerClient = true/false);
         /// </summary>
         protected abstract void RegisterCallbacks();
 
         /// <summary>
         /// Register a message-based command on the server and optionally on the client.
-        ///
+        /// <para>
         /// Registering on the server enables <see cref="SendCommand"/> to reach the server, like a [Command].
-        /// Registering on the client enables <paramref name="callback"/> to reach the clients, like a [ClientRpc].
+        /// Registering on the client enables the <paramref name="callback"/> to reach the clients, like a [ClientRpc].
+        /// </para>
         /// </summary>
-        /// <param name="msgType">Unique number specific to this callback. <see cref="Message.MsgType"/></param>
-        /// <param name="callback">The function contain server code, like a [Command].</param>
+        /// <param name="msgType">A number unique to this callback. <see cref="Message.MsgType"/></param>
+        /// <param name="callback">The function containing server code, like a [Command].</param>
         /// <param name="registerClient">True if the client should be able to receive the callback, like a [ClientRpc].</param>
         protected void RegisterCallback(short msgType, NetworkMessageDelegate callback, bool registerClient = false)
         {
@@ -75,13 +75,9 @@ namespace LocalAuthority
             }
         }
 
-        protected virtual void Awake()
-        {
-            RegisterCallbacks();
-        }
 
         /// <summary>
-        /// Forward a message to all clients, except for the host and optionally the caller.
+        /// Forward a message to all clients, except for the host and optionally omitting the caller.
         /// </summary>
         /// <param name="netMsg">The network message received in the method registered with RegisterCallback().</param>
         /// <param name="msg">The message unpacked with netMsg.ReadMessage().</param>

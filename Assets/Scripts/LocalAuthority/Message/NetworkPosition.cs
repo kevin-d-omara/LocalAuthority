@@ -54,8 +54,7 @@ namespace LocalAuthority.Message
 
         private void BroadcastCurrentTransform()
         {
-            var msg = new Vector3NetIdMessage(netId, transform.position);
-            SendCommand((short)MsgType.UpdateTargetSyncPosition, msg);
+            SendCommand<Vector3NetIdMessage>((short) MsgType.UpdateTargetSyncPosition, transform.position);
         }
 
         private static void CmdUpdateTargetSyncPosition(NetworkMessage netMsg)
