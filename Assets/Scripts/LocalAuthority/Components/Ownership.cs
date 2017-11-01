@@ -1,12 +1,22 @@
-﻿using TabletopCardCompanion;
+﻿using LocalAuthority.Message;
+using TabletopCardCompanion;
 using UnityEngine.Networking;
+using MsgType = LocalAuthority.Message.MsgType;
 
-namespace LocalAuthority.Message
+namespace LocalAuthority.Components
 {
     /// <summary>
-    /// This tracks player ownership of a GameObject. This does NOT give actual authority, it merely offers server
-    /// authoritative way to track and change ownership.
+    /// Tracks player ownership of a GameObject across the network. It acts like a networked mutex, except code won't
+    /// hang if the mutex is down.
+    /// <para>
+    /// To run code with the protection of the mutex, wrap it with:
+    ///     - call <see cref="RequestOwnership"/>
+    ///     - if (myOwnership.IsOwnedByLocal)
+    ///           // execute your code over as many frames as you'd like
+    ///     - call <see cref="ReleaseOwnership"/>
+    /// </para>
     /// </summary>
+    /// <seealso cref="NetworkPosition"/>
     /// <remarks>It is required that the Player prefab has "PlayerInfo" attached.</remarks>
     public class Ownership : LocalAuthorityBehaviour
     {
@@ -20,6 +30,7 @@ namespace LocalAuthority.Message
         /// </summary>
         public bool IsOwnedByLocal
         {
+            // TODO: Decouple from TabletopCardCompanion.PlayerInfo
             get { return Owner == PlayerInfo.LocalPlayer.NetIdentity; }
         }
 

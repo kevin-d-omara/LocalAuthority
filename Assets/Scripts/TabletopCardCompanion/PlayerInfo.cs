@@ -12,6 +12,7 @@ namespace TabletopCardCompanion
 
         public static event EventHandler<EventArgs> PlayerInitialized;
 
+
         // Initialization ------------------------------------------------------
         private void Awake()
         {

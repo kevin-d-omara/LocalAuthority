@@ -4,7 +4,7 @@ using LocalAuthority.Message;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace LocalAuthority
+namespace LocalAuthority.Components
 {
     /// <summary>
     /// Extend this class instead of <see cref="NetworkBehaviour"/> to enable message-based commands.
@@ -89,7 +89,7 @@ namespace LocalAuthority
         /// Registering on the client enables the <paramref name="callback"/> to reach the clients, like a [ClientRpc].
         /// </para>
         /// </summary>
-        /// <param name="msgType">A number unique to this callback. <see cref="Message.MsgType"/></param>
+        /// <param name="msgType">A number unique to this callback. <see cref="UnityEngine.Networking.MsgType"/></param>
         /// <param name="callback">The function containing server code, like a [Command].</param>
         /// <param name="registerClient">True if the client should be able to receive the callback, like a [ClientRpc].</param>
         protected void RegisterCallback(short msgType, NetworkMessageDelegate callback, bool registerClient = false)

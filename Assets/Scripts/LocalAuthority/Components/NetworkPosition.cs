@@ -1,7 +1,9 @@
-﻿using UnityEngine;
+﻿using LocalAuthority.Message;
+using UnityEngine;
 using UnityEngine.Networking;
+using MsgType = LocalAuthority.Message.MsgType;
 
-namespace LocalAuthority.Message
+namespace LocalAuthority.Components
 {
     /// <summary>
     /// Enables any client to move the object and update other clients. To broadcast a continuous movement:
@@ -29,7 +31,6 @@ namespace LocalAuthority.Message
             BroadcastCurrentTransform();
             ownership.ReleaseOwnership();
         }
-
 
         private void Update()
         {
@@ -74,6 +75,7 @@ namespace LocalAuthority.Message
                 targetSyncPosition = newSyncPosition;
             }
         }
+
 
         // Data ----------------------------------------------------------------
 

@@ -3,6 +3,10 @@ using UnityEngine.Networking;
 
 namespace LocalAuthority.Message
 {
+    // Note: All messages have explicit Deserialize and Serialize methods, despite that Unity.Networking will
+    //       code-generate these for you. I found that even simple classes like IntNetIdMessage were not being
+    //       code-generated correctly, and the value would always be zero.
+
     /// <summary>
     /// Message base class for using Message-invoked Commands.
     /// </summary>
@@ -191,142 +195,6 @@ namespace LocalAuthority.Message
         {
             base.Serialize(writer);
             writer.Write(netId2);
-        }
-    }
-
-
-
-
-
-    // Client-side Prediction ==========================================================================================
-
-    /// <summary>
-    /// Message base class for using Message-invoked Commands with Client-side prediction enabled.
-    /// </summary>
-    public class CommandRecordMessage : NetIdMessage
-    {
-        public CommandRecord cmdRecord;
-
-        public CommandRecordMessage()
-        {
-        }
-
-        public CommandRecordMessage(NetworkInstanceId id, CommandRecord cmdRecord) : base(id)
-        {
-            this.cmdRecord = cmdRecord;
-        }
-
-        public override void VarargsSetter(params object[] args)
-        {
-            cmdRecord = (CommandRecord) args[0];
-        }
-
-        public override void Deserialize(NetworkReader reader)
-        {
-            base.Deserialize(reader);
-            cmdRecord = CommandRecord.Read(reader);
-        }
-
-        public override void Serialize(NetworkWriter writer)
-        {
-            base.Serialize(writer);
-            cmdRecord.Write(writer);
-        }
-    }
-
-    public class FloatCommandRecordMessage : CommandRecordMessage
-    {
-        public float value;
-
-        public FloatCommandRecordMessage()
-        {
-        }
-
-        public FloatCommandRecordMessage(NetworkInstanceId id, CommandRecord cmdRecord, float value) : base(id, cmdRecord)
-        {
-            this.value = value;
-        }
-
-        public override void VarargsSetter(params object[] args)
-        {
-            base.VarargsSetter(args);
-            value = (float) args[1];
-        }
-
-        public override void Deserialize(NetworkReader reader)
-        {
-            base.Deserialize(reader);
-            value = reader.ReadSingle();
-        }
-
-        public override void Serialize(NetworkWriter writer)
-        {
-            base.Serialize(writer);
-            writer.Write(value);
-        }
-    }
-
-    public class IntCommandRecordMessage : CommandRecordMessage
-    {
-        public int value;
-
-        public IntCommandRecordMessage()
-        {
-        }
-
-        public IntCommandRecordMessage(NetworkInstanceId id, CommandRecord cmdRecord, int value) : base(id, cmdRecord)
-        {
-            this.value = value;
-        }
-
-        public override void VarargsSetter(params object[] args)
-        {
-            base.VarargsSetter(args);
-            value = (int) args[1];
-        }
-
-        public override void Deserialize(NetworkReader reader)
-        {
-            base.Deserialize(reader);
-            value = (int)reader.ReadPackedUInt32();
-        }
-
-        public override void Serialize(NetworkWriter writer)
-        {
-            base.Serialize(writer);
-            writer.WritePackedUInt32((uint)value);
-        }
-    }
-
-    public class Vector3CommandRecordMessage : CommandRecordMessage
-    {
-        public Vector3 value;
-
-        public Vector3CommandRecordMessage()
-        {
-        }
-
-        public Vector3CommandRecordMessage(NetworkInstanceId id, CommandRecord cmdRecord, Vector3 value) : base(id, cmdRecord)
-        {
-            this.value = value;
-        }
-
-        public override void VarargsSetter(params object[] args)
-        {
-            base.VarargsSetter(args);
-            value = (Vector3) args[1];
-        }
-
-        public override void Deserialize(NetworkReader reader)
-        {
-            base.Deserialize(reader);
-            value = reader.ReadVector3();
-        }
-
-        public override void Serialize(NetworkWriter writer)
-        {
-            base.Serialize(writer);
-            writer.Write(value);
         }
     }
 }

@@ -12,7 +12,6 @@
 
         // CardController
         ToggleColor,
-        FlipOver,
         Rotate,
         Scale,
 

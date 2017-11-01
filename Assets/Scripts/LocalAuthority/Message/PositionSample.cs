@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using LocalAuthority.Components;
+using UnityEngine;
 using UnityEngine.Networking;
 using Object = System.Object;
 
@@ -13,6 +14,7 @@ namespace LocalAuthority.Message
         public Vector3 Position { get; }
 
         public float Timestamp { get; }
+
 
         // Methods -------------------------------------------------------------
         public PositionSample(Vector3 position, float timestamp)
@@ -39,6 +41,7 @@ namespace LocalAuthority.Message
             writer.Write(Position);
             writer.Write(Timestamp);
         }
+        
 
         // Overrides -----------------------------------------------------------
         public override bool Equals(Object obj)

@@ -1,5 +1,5 @@
 ﻿using System;
-using LocalAuthority;
+using LocalAuthority.Components;
 using LocalAuthority.Message;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -10,7 +10,36 @@ namespace TabletopCardCompanion.GameElement
     [RequireComponent(typeof(NetworkPosition))]
     public class CardController : LocalAuthorityBehaviour
     {
-        #region In-Progress
+        // Input Handler (Command Source) --------------------------------------
+        private void OnMouseOver()
+        {
+            if (Input.GetButtonDown(AxisName.ToggleColor))
+            {
+                ToggleColor();
+
+                SendCommand<NetIdMessage>((short)MsgType.ToggleColor);
+            }
+
+            if (Input.GetButtonDown(AxisName.Rotate))
+            {
+                var direction = Input.GetAxis("Rotate") > 0 ? 1 : -1;
+                var degrees = 60 * direction;
+
+                Rotate(degrees);
+
+                SendCommand<IntNetIdMessage>((short)MsgType.Rotate, degrees);
+            }
+
+            if (Input.GetButtonDown(AxisName.Scale))
+            {
+                var direction = Input.GetAxis("Scale") > 0 ? 1 : -1;
+                var percent = 0.1f * direction;
+
+                Scale(percent);
+
+                SendCommand<FloatNetIdMessage>((short)MsgType.Scale, percent);
+            }
+        }
 
         private void OnMouseDown()
         {
@@ -43,40 +72,6 @@ namespace TabletopCardCompanion.GameElement
             transform.position += deltaPos;
         }
 
-        #endregion In-Progress
-
-
-        // Input Handler (Command Source) --------------------------------------
-        private void OnMouseOver()
-        {
-            if (Input.GetButtonDown(AxisName.ToggleColor))
-            {
-                ToggleColor();
-
-                SendCommand<NetIdMessage>((short) MsgType.ToggleColor);
-            }
-
-            if (Input.GetButtonDown(AxisName.Rotate))
-            {
-                var direction = Input.GetAxis("Rotate") > 0 ? 1 : -1;
-                var degrees = 60 * direction;
-
-                Rotate(degrees);
-
-                SendCommand<IntNetIdMessage>((short)MsgType.Rotate, degrees);
-            }
-
-            if (Input.GetButtonDown(AxisName.Scale))
-            {
-                var direction = Input.GetAxis("Scale") > 0 ? 1 : -1;
-                var percent = 0.1f * direction;
-
-                Scale(percent);
-
-                SendCommand<FloatNetIdMessage>((short)MsgType.Scale, percent);
-            }
-        }
-
 
         // API (Controls) ------------------------------------------------------
         private void ToggleColor()
@@ -94,6 +89,7 @@ namespace TabletopCardCompanion.GameElement
             var newScale = model.LocalScale * (1f + percent);
             model.HookLocalScale(newScale);
         }
+
 
         // Commands ------------------------------------------------------------
         private static void CmdToggleColor(NetworkMessage netMsg)
@@ -119,6 +115,7 @@ namespace TabletopCardCompanion.GameElement
             Action action = () => obj.Scale(msg.value);
             obj.RunNetworkAction(action, netMsg, msg, ignoreSender: true);
         }
+
 
         // Initialization ------------------------------------------------------
         private CardModel model;

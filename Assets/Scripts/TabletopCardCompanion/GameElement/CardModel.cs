@@ -1,5 +1,4 @@
-﻿using TabletopCardCompanion.Debug;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Networking;
 
 namespace TabletopCardCompanion.GameElement
