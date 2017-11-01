@@ -58,7 +58,7 @@ namespace LocalAuthority.Message
         /// </summary>
         public void ReleaseOwnership()
         {
-            SendCommand<TwoNetIdMessage>((short)MsgType.RequestOwnership, PlayerInfo.LocalPlayer.netId);
+            SendCommand<TwoNetIdMessage>((short)MsgType.ReleaseOwnership, PlayerInfo.LocalPlayer.netId);
 
             // Immediately release control (client-side prediction).
             if (IsOwnedByLocal)
