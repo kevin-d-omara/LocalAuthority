@@ -46,6 +46,8 @@ namespace LocalAuthority.Message
             }
             else if (targetSyncPosition != transform.position)
             {
+                // BUG: If object is moving when client joins late, the client doesn't update at all.
+
                 // Interpolate.
                 transform.position = targetSyncPosition;
             }

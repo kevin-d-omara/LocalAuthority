@@ -30,33 +30,12 @@ namespace LocalAuthority
         {
             if (isServer)
             {
-                ForwardMessage(netMsg, msg);
+                ForwardMessage(netMsg, msg, ignoreSender);
 
                 if (ignoreSender && NetworkServer.localConnections.Contains(netMsg.conn)) return;
             }
 
             action();
-        }
-
-        /// <summary>
-        /// Forward a message to all clients, except for the host and optionally the caller.
-        /// </summary>
-        /// <param name="netMsg">The network message received in the method registered with RegisterCallback().</param>
-        /// <param name="msg">The message unpacked with netMsg.ReadMessage().</param>
-        /// <param name="ignoreSender">True if the action should NOT be run on the caller (i.e. for client-side prediction).</param>
-        protected void ForwardMessage(NetworkMessage netMsg, MessageBase msg, bool ignoreSender = true)
-        {
-            // TODO: Does this actually work for couch coop?
-            var ignoreList = new List<NetworkConnection>(NetworkServer.localConnections);
-            if (ignoreSender) ignoreList.Add(netMsg.conn);
-
-            foreach (var conn in NetworkServer.connections)
-            {
-                if (!ignoreList.Contains(conn))
-                {
-                    conn.Send(netMsg.msgType, msg);
-                }
-            }
         }
 
         /// <summary>
@@ -78,16 +57,48 @@ namespace LocalAuthority
         protected abstract void RegisterCallbacks();
 
         /// <summary>
-        /// Register a "command".
+        /// Register a message-based command on the server and optionally on the client.
+        ///
+        /// Registering on the server enables <see cref="SendCommand"/> to reach the server, like a [Command].
+        /// Registering on the client enables <paramref name="callback"/> to reach the clients, like a [ClientRpc].
         /// </summary>
-        protected void RegisterCallback(short msgType, NetworkMessageDelegate callback)
+        /// <param name="msgType">Unique number specific to this callback. <see cref="TabletopCardCompanion.MsgType"/></param>
+        /// <param name="callback">The function contain server code, like a [Command].</param>
+        /// <param name="registerClient">True if the client should be able to receive the callback, like a [ClientRpc].</param>
+        protected void RegisterCallback(short msgType, NetworkMessageDelegate callback, bool registerClient = false)
         {
             NetworkServer.RegisterHandler(msgType, callback);
+
+            if (registerClient)
+            {
+                NetworkManager.singleton.client.RegisterHandler(msgType, callback);
+            }
         }
 
         protected virtual void Awake()
         {
             RegisterCallbacks();
+        }
+
+        /// <summary>
+        /// Forward a message to all clients, except for the host and optionally the caller.
+        /// </summary>
+        /// <param name="netMsg">The network message received in the method registered with RegisterCallback().</param>
+        /// <param name="msg">The message unpacked with netMsg.ReadMessage().</param>
+        /// <param name="ignoreSender">True if the action should NOT be run on the caller (i.e. for client-side prediction).</param>
+        private void ForwardMessage(NetworkMessage netMsg, MessageBase msg, bool ignoreSender = true)
+        {
+            // TODO: Does this actually work for couch coop?
+            var ignoreList = new List<NetworkConnection>(NetworkServer.localConnections);
+            if (ignoreSender) ignoreList.Add(netMsg.conn);
+
+            foreach (var conn in NetworkServer.connections)
+            {
+                if (!ignoreList.Contains(conn))
+                {
+                    conn.Send(netMsg.msgType, msg);
+                }
+            }
         }
     }
 }

@@ -106,7 +106,7 @@ namespace TabletopCardCompanion.GameElement
             var msg = netMsg.ReadMessage<CommandRecordMessage>();
             var obj = NetworkingUtilities.FindLocalComponent<CardController>(msg.netId);
             Action action = () => obj.ToggleColor();
-            obj.RunNetworkAction(action, netMsg, msg);
+            obj.RunNetworkAction(action, netMsg, msg, ignoreSender: true);
         }
 
         private static void CmdRotate(NetworkMessage netMsg)
@@ -114,7 +114,7 @@ namespace TabletopCardCompanion.GameElement
             var msg = netMsg.ReadMessage<IntCommandRecordMessage>();
             var obj = NetworkingUtilities.FindLocalComponent<CardController>(msg.netId);
             Action action = () => obj.Rotate(msg.value);
-            obj.RunNetworkAction(action, netMsg, msg);
+            obj.RunNetworkAction(action, netMsg, msg, ignoreSender: true);
         }
 
         private static void CmdScale(NetworkMessage netMsg)
@@ -122,7 +122,7 @@ namespace TabletopCardCompanion.GameElement
             var msg = netMsg.ReadMessage<FloatCommandRecordMessage>();
             var obj = NetworkingUtilities.FindLocalComponent<CardController>(msg.netId);
             Action action = () => obj.Scale(msg.value);
-            obj.RunNetworkAction(action, netMsg, msg);
+            obj.RunNetworkAction(action, netMsg, msg, ignoreSender: true);
         }
 
         // Initialization ------------------------------------------------------
@@ -140,13 +140,9 @@ namespace TabletopCardCompanion.GameElement
 
         protected override void RegisterCallbacks()
         {
-            NetworkManager.singleton.client.RegisterHandler((short)MsgType.ToggleColor, CmdToggleColor);
-            NetworkManager.singleton.client.RegisterHandler((short)MsgType.Rotate, CmdRotate);
-            NetworkManager.singleton.client.RegisterHandler((short)MsgType.Scale, CmdScale);
-
-            RegisterCallback((short)MsgType.ToggleColor, CmdToggleColor);
-            RegisterCallback((short)MsgType.Rotate, CmdRotate);
-            RegisterCallback((short)MsgType.Scale, CmdScale);
+            RegisterCallback((short)MsgType.ToggleColor, CmdToggleColor, registerClient: true);
+            RegisterCallback((short)MsgType.Rotate, CmdRotate, registerClient: true);
+            RegisterCallback((short)MsgType.Scale, CmdScale, registerClient: true);
         }
     }
 }
