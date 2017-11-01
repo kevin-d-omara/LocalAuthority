@@ -1,4 +1,5 @@
-﻿using LocalAuthority;
+﻿using System;
+using LocalAuthority;
 using LocalAuthority.Message;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -99,59 +100,29 @@ namespace TabletopCardCompanion.GameElement
             model.HookLocalScale(newScale);
         }
 
-        // Message RPCs (Update Model) -----------------------------------------
-        [ClientRpc]
-        private void RpcToggleColor(NetworkInstanceId requesterNetId)
-        {
-            if (requesterNetId == PlayerInfo.LocalPlayer.netId) return;
-
-            ToggleColor();
-        }
-
-        [ClientRpc]
-        private void RpcRotate(NetworkInstanceId requesterNetId, int degrees)
-        {
-            if (requesterNetId == PlayerInfo.LocalPlayer.netId) return;
-
-            Rotate(degrees);
-        }
-
-        [ClientRpc]
-        private void RpcScale(NetworkInstanceId requesterNetId, float percent)
-        {
-            if (requesterNetId == PlayerInfo.LocalPlayer.netId) return;
-
-            Scale(percent);
-        }
-
-        // Message Commands ----------------------------------------------------
+        // Commands ------------------------------------------------------------
         private static void CmdToggleColor(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<CommandRecordMessage>();
-            var controller = NetworkingUtilities.FindLocalComponent<CardController>(msg.netId);
-
-            controller.RpcToggleColor(msg.cmdRecord.NetId);
+            var obj = NetworkingUtilities.FindLocalComponent<CardController>(msg.netId);
+            Action action = () => obj.ToggleColor();
+            obj.RunNetworkAction(action, netMsg, msg);
         }
 
         private static void CmdRotate(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<IntCommandRecordMessage>();
-            var controller = NetworkingUtilities.FindLocalComponent<CardController>(msg.netId);
-
-            controller.RpcRotate(msg.cmdRecord.NetId, msg.value);
+            var obj = NetworkingUtilities.FindLocalComponent<CardController>(msg.netId);
+            Action action = () => obj.Rotate(msg.value);
+            obj.RunNetworkAction(action, netMsg, msg);
         }
 
         private static void CmdScale(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<FloatCommandRecordMessage>();
-            var controller = NetworkingUtilities.FindLocalComponent<CardController>(msg.netId);
-
-            controller.RpcScale(msg.cmdRecord.NetId, msg.value);
-        }
-
-        private static void CmdRotate2(IntCommandRecordMessage msg, CardController controller)
-        {
-            controller.RpcRotate(msg.cmdRecord.NetId, msg.value);
+            var obj = NetworkingUtilities.FindLocalComponent<CardController>(msg.netId);
+            Action action = () => obj.Scale(msg.value);
+            obj.RunNetworkAction(action, netMsg, msg);
         }
 
         // Initialization ------------------------------------------------------
@@ -169,6 +140,10 @@ namespace TabletopCardCompanion.GameElement
 
         protected override void RegisterCallbacks()
         {
+            NetworkManager.singleton.client.RegisterHandler((short)MsgType.ToggleColor, CmdToggleColor);
+            NetworkManager.singleton.client.RegisterHandler((short)MsgType.Rotate, CmdRotate);
+            NetworkManager.singleton.client.RegisterHandler((short)MsgType.Scale, CmdScale);
+
             RegisterCallback((short)MsgType.ToggleColor, CmdToggleColor);
             RegisterCallback((short)MsgType.Rotate, CmdRotate);
             RegisterCallback((short)MsgType.Scale, CmdScale);
