@@ -60,7 +60,7 @@ namespace LocalAuthority.Message
         private static void CmdUpdateTargetSyncPosition(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<Vector3NetIdMessage>();
-            var netPosition = NetworkingUtilities.FindLocalComponent<NetworkPosition>(msg.netId);
+            var netPosition = FindLocalComponent<NetworkPosition>(msg.netId);
             var syncPosition = msg.value;
 
             netPosition.targetSyncPosition = syncPosition;

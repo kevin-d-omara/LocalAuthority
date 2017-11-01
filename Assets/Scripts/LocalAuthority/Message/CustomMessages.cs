@@ -9,7 +9,7 @@ namespace LocalAuthority.Message
     public class NetIdMessage : MessageBase
     {
         /// <summary>
-        /// The NetworkInstanceId of the object that sent this message. Used to local the object within the scene.
+        /// The NetworkInstanceId of the object that sent this message. Used to find the object within the scene.
         /// </summary>
         public NetworkInstanceId netId;
 

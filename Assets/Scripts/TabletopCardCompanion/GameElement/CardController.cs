@@ -99,7 +99,7 @@ namespace TabletopCardCompanion.GameElement
         private static void CmdToggleColor(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<NetIdMessage>();
-            var obj = NetworkingUtilities.FindLocalComponent<CardController>(msg.netId);
+            var obj = FindLocalComponent<CardController>(msg.netId);
             Action action = () => obj.ToggleColor();
             obj.RunNetworkAction(action, netMsg, msg, ignoreSender: true);
         }
@@ -107,7 +107,7 @@ namespace TabletopCardCompanion.GameElement
         private static void CmdRotate(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<IntNetIdMessage>();
-            var obj = NetworkingUtilities.FindLocalComponent<CardController>(msg.netId);
+            var obj = FindLocalComponent<CardController>(msg.netId);
             Action action = () => obj.Rotate(msg.value);
             obj.RunNetworkAction(action, netMsg, msg, ignoreSender: true);
         }
@@ -115,7 +115,7 @@ namespace TabletopCardCompanion.GameElement
         private static void CmdScale(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<FloatNetIdMessage>();
-            var obj = NetworkingUtilities.FindLocalComponent<CardController>(msg.netId);
+            var obj = FindLocalComponent<CardController>(msg.netId);
             Action action = () => obj.Scale(msg.value);
             obj.RunNetworkAction(action, netMsg, msg, ignoreSender: true);
         }

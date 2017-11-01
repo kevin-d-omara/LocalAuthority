@@ -72,23 +72,23 @@ namespace LocalAuthority.Message
         private static void CmdRequestOwnership(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<TwoNetIdMessage>();
-            var ownership = NetworkingUtilities.FindLocalComponent<Ownership>(msg.netId);
-            var requester = NetworkingUtilities.FindLocalObject(msg.netId2);
+            var ownership = FindLocalComponent<Ownership>(msg.netId);
+            var requester = FindLocalComponent<NetworkIdentity>(msg.netId2);
 
             // Prevent players from stealing ownership.
             if (ownership.IsOwnedByNone)
             {
-                ownership.Owner = requester.GetComponent<NetworkIdentity>();
+                ownership.Owner = requester;
             }
         }
 
         private static void CmdReleaseOwnership(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<TwoNetIdMessage>();
-            var ownership = NetworkingUtilities.FindLocalComponent<Ownership>(msg.netId);
-            var requester = NetworkingUtilities.FindLocalObject(msg.netId2);
+            var ownership = FindLocalComponent<Ownership>(msg.netId);
+            var requester = FindLocalComponent<NetworkIdentity>(msg.netId2);
 
-            if (ownership.Owner == requester.GetComponent<NetworkIdentity>())
+            if (ownership.Owner == requester)
             {
                 ownership.Owner = null;
             }
