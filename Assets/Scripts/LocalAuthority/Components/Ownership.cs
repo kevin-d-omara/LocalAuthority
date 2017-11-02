@@ -119,10 +119,10 @@ namespace LocalAuthority.Components
             get { return LocalAuthorityPlayer.LocalPlayer.NetIdentity; }
         }
 
-        protected override void RegisterCallbacks()
+        protected override void RegisterCommands()
         {
-            RegisterCallback((short)MsgType.RequestOwnership, CmdRequestOwnership);
-            RegisterCallback((short)MsgType.ReleaseOwnership, CmdReleaseOwnership);
+            RegisterCommand((short)MsgType.RequestOwnership, CmdRequestOwnership);
+            RegisterCommand((short)MsgType.ReleaseOwnership, CmdReleaseOwnership);
         }
     }
 }

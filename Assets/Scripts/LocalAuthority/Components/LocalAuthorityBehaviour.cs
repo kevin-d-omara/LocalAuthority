@@ -26,11 +26,11 @@ namespace LocalAuthority.Components
         /// <summary>
         /// Run the action on all clients (like an RPC), except for the host and optionally the caller.
         /// </summary>
-        /// <param name="action">Closure holding a function and it's arguments.</param>
-        /// <param name="netMsg">The network message received in the method registered with RegisterCallback().</param>
+        /// <param name="action">A closure with all arguments filled in. Ex: Action action = () => Foo(bar);</param>
+        /// <param name="netMsg">The network message received in the method registered with RegisterCommand().</param>
         /// <param name="msg">The message unpacked with netMsg.ReadMessage().</param>
         /// <param name="ignoreSender">True if the action should NOT be run on the caller (i.e. for client-side prediction).</param>
-        protected void RunNetworkAction(Action action, NetworkMessage netMsg, MessageBase msg, bool ignoreSender = true)
+        protected void InvokeMessageRpc(Action action, NetworkMessage netMsg, MessageBase msg, bool ignoreSender = true)
         {
             if (isServer)
             {
@@ -72,13 +72,13 @@ namespace LocalAuthority.Components
 
         protected virtual void Awake()
         {
-            RegisterCallbacks();
+            RegisterCommands();
         }
 
         /// <summary>
-        /// Fill this with calls to <see cref="RegisterCallback"/>. This gets called in Awake().
+        /// Fill this with calls to <see cref="RegisterCommand"/>. This gets called in Awake().
         /// </summary>
-        protected abstract void RegisterCallbacks();
+        protected abstract void RegisterCommands();
 
         /// <summary>
         /// Register a message-based command on the server and optionally on the client.
@@ -90,7 +90,7 @@ namespace LocalAuthority.Components
         /// <param name="msgType">A number unique to this callback. <see cref="UnityEngine.Networking.MsgType"/></param>
         /// <param name="callback">The function containing server code, like a [Command].</param>
         /// <param name="registerClient">True if the client should be able to receive the callback, like a [ClientRpc].</param>
-        protected void RegisterCallback(short msgType, NetworkMessageDelegate callback, bool registerClient = false)
+        protected void RegisterCommand(short msgType, NetworkMessageDelegate callback, bool registerClient = false)
         {
             NetworkServer.RegisterHandler(msgType, callback);
 
@@ -104,7 +104,7 @@ namespace LocalAuthority.Components
         /// <summary>
         /// Forward a message to all clients, except for the host and optionally omitting the caller.
         /// </summary>
-        /// <param name="netMsg">The network message received in the method registered with RegisterCallback().</param>
+        /// <param name="netMsg">The network message received in the method registered with RegisterCommand().</param>
         /// <param name="msg">The message unpacked with netMsg.ReadMessage().</param>
         /// <param name="ignoreSender">True if the action should NOT be run on the caller (i.e. for client-side prediction).</param>
         private void ForwardMessage(NetworkMessage netMsg, MessageBase msg, bool ignoreSender = true)

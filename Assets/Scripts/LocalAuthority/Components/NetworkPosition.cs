@@ -138,9 +138,9 @@ namespace LocalAuthority.Components
             targetSyncPosition = transform.position;
         }
 
-        protected override void RegisterCallbacks()
+        protected override void RegisterCommands()
         {
-            RegisterCallback((short)MsgType.UpdateTargetSyncPosition, CmdUpdateTargetSyncPosition);
+            RegisterCommand((short)MsgType.UpdateTargetSyncPosition, CmdUpdateTargetSyncPosition);
         }
     }
 }

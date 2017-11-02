@@ -97,7 +97,7 @@ namespace TabletopCardCompanion.GameElement
             var msg = netMsg.ReadMessage<NetIdMessage>();
             var obj = FindLocalComponent<CardController>(msg.netId);
             Action action = () => obj.ToggleColor();
-            obj.RunNetworkAction(action, netMsg, msg, ignoreSender: true);
+            obj.InvokeMessageRpc(action, netMsg, msg, ignoreSender: true);
         }
 
         private static void CmdRotate(NetworkMessage netMsg)
@@ -105,7 +105,7 @@ namespace TabletopCardCompanion.GameElement
             var msg = netMsg.ReadMessage<IntNetIdMessage>();
             var obj = FindLocalComponent<CardController>(msg.netId);
             Action action = () => obj.Rotate(msg.value);
-            obj.RunNetworkAction(action, netMsg, msg, ignoreSender: true);
+            obj.InvokeMessageRpc(action, netMsg, msg, ignoreSender: true);
         }
 
         private static void CmdScale(NetworkMessage netMsg)
@@ -113,7 +113,7 @@ namespace TabletopCardCompanion.GameElement
             var msg = netMsg.ReadMessage<FloatNetIdMessage>();
             var obj = FindLocalComponent<CardController>(msg.netId);
             Action action = () => obj.Scale(msg.value);
-            obj.RunNetworkAction(action, netMsg, msg, ignoreSender: true);
+            obj.InvokeMessageRpc(action, netMsg, msg, ignoreSender: true);
         }
 
 
@@ -130,11 +130,11 @@ namespace TabletopCardCompanion.GameElement
             networkPosition = GetComponent<NetworkPosition>();
         }
 
-        protected override void RegisterCallbacks()
+        protected override void RegisterCommands()
         {
-            RegisterCallback((short)MsgType.ToggleColor, CmdToggleColor, registerClient: true);
-            RegisterCallback((short)MsgType.Rotate, CmdRotate, registerClient: true);
-            RegisterCallback((short)MsgType.Scale, CmdScale, registerClient: true);
+            RegisterCommand((short)MsgType.ToggleColor, CmdToggleColor, registerClient: true);
+            RegisterCommand((short)MsgType.Rotate, CmdRotate, registerClient: true);
+            RegisterCommand((short)MsgType.Scale, CmdScale, registerClient: true);
         }
     }
 }
