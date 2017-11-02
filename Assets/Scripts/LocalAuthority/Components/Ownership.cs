@@ -1,5 +1,4 @@
 ﻿using LocalAuthority.Message;
-using TabletopCardCompanion;
 using UnityEngine.Networking;
 using MsgType = LocalAuthority.Message.MsgType;
 
@@ -15,9 +14,11 @@ namespace LocalAuthority.Components
     ///           // execute your code over as many frames as you'd like
     ///     - call <see cref="ReleaseOwnership"/>
     /// </para>
+    /// <para>
+    /// For an example of use, <see cref="NetworkPosition"/>.
+    /// </para>
     /// </summary>
-    /// <seealso cref="NetworkPosition"/>
-    /// <remarks>It is required that the Player prefab has "PlayerInfo" attached.</remarks>
+    /// <remarks>The Player prefab must have <see cref="LocalAuthorityPlayer"/> attached for this to work.</remarks>
     public class Ownership : LocalAuthorityBehaviour
     {
         /// <summary>
@@ -30,8 +31,7 @@ namespace LocalAuthority.Components
         /// </summary>
         public bool IsOwnedByLocal
         {
-            // TODO: Decouple from TabletopCardCompanion.PlayerInfo
-            get { return Owner == PlayerInfo.LocalPlayer.NetIdentity; }
+            get { return Owner == LocalPlayer; }
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace LocalAuthority.Components
         /// </summary>
         public bool IsOwnedByRemote
         {
-            get { return Owner != null && Owner != PlayerInfo.LocalPlayer.NetIdentity; }
+            get { return Owner != null && Owner != LocalPlayer; }
         }
 
         /// <summary>
@@ -55,12 +55,12 @@ namespace LocalAuthority.Components
         /// </summary>
         public void RequestOwnership()
         {
-            SendCommand<TwoNetIdMessage>((short) MsgType.RequestOwnership, PlayerInfo.LocalPlayer.netId);
+            SendCommand<TwoNetIdMessage>((short) MsgType.RequestOwnership, LocalPlayer.netId);
 
             // Give immediate control (client-side prediction).
             if (IsOwnedByNone)
             {
-                owner = PlayerInfo.LocalPlayer.NetIdentity;
+                owner = LocalPlayer;
             }
         }
 
@@ -69,7 +69,7 @@ namespace LocalAuthority.Components
         /// </summary>
         public void ReleaseOwnership()
         {
-            SendCommand<TwoNetIdMessage>((short)MsgType.ReleaseOwnership, PlayerInfo.LocalPlayer.netId);
+            SendCommand<TwoNetIdMessage>((short)MsgType.ReleaseOwnership, LocalPlayer.netId);
 
             // Immediately release control (client-side prediction).
             if (IsOwnedByLocal)
@@ -99,6 +99,7 @@ namespace LocalAuthority.Components
             var ownership = FindLocalComponent<Ownership>(msg.netId);
             var requester = FindLocalComponent<NetworkIdentity>(msg.netId2);
 
+            // Prevent players from dropping someone else's ownership.
             if (ownership.Owner == requester)
             {
                 ownership.Owner = null;
@@ -109,6 +110,14 @@ namespace LocalAuthority.Components
         // Initialization ------------------------------------------------------
         [SyncVar]
         private NetworkIdentity owner;
+
+        /// <summary>
+        /// Wrapper reference to the Player game object owned by this client.
+        /// </summary>
+        private static NetworkIdentity LocalPlayer
+        {
+            get { return LocalAuthorityPlayer.LocalPlayer.NetIdentity; }
+        }
 
         protected override void RegisterCallbacks()
         {

@@ -1,15 +1,28 @@
 ﻿using System;
 using UnityEngine.Networking;
 
-namespace TabletopCardCompanion
+namespace LocalAuthority.Components
 {
-    public class PlayerInfo : NetworkBehaviour
+    /// <summary>
+    /// Attach to the Player prefab to enable <see cref="Ownership"/>, which is necessary for components like <see cref="NetworkPosition"/>.
+    /// </summary>
+    public class LocalAuthorityPlayer : NetworkBehaviour
     {
         // Data ----------------------------------------------------------------
-        public static PlayerInfo LocalPlayer { get; private set; }
 
+        /// <summary>
+        /// Singleton reference to the Player object owned by this client.
+        /// </summary>
+        public static LocalAuthorityPlayer LocalPlayer { get; private set; }
+
+        /// <summary>
+        /// Convienience reference to the player object's Network Identity.
+        /// </summary>
         public NetworkIdentity NetIdentity { get; private set; }
 
+        /// <summary>
+        /// Raised when the singleton reference <see cref="LocalPlayer"/> is set for the first time.
+        /// </summary>
         public static event EventHandler<EventArgs> PlayerInitialized;
 
 
