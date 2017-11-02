@@ -7,6 +7,24 @@ namespace LocalAuthority.Message
     //       code-generate these for you. I found that even simple classes like IntNetIdMessage were not being
     //       code-generated correctly, and the value would always be zero.
 
+
+    public static class MessageFactory
+    {
+        /// <summary>
+        /// Return a new instance of TMsg with all of its fields initialized.
+        /// </summary>
+        /// <typeparam name="TMsg">Type of message to create.</typeparam>
+        /// <param name="args">Arguments in the order of TMsg's full constructor, with netId omitted.</param>
+        /// <returns>New TMsg instance with all fields initialized.</returns>
+        public static TMsg New<TMsg>(NetworkInstanceId netId, params object[] args) where TMsg : NetIdMessage, new()
+        {
+            var msg = new TMsg();
+            msg.netId = netId;
+            msg.VarargsSetter(args);
+            return msg;
+        }
+    }
+
     /// <summary>
     /// Message base class for using Message-invoked Commands.
     /// </summary>
@@ -29,7 +47,7 @@ namespace LocalAuthority.Message
         /// <summary>
         /// Set all class fields, except netId.
         /// </summary>
-        /// <param name="args">Arguments to the full constructor, in that order, with netId omitted.</param>
+        /// <param name="args">Arguments in the order of the full constructor, with netId omitted.</param>
         public virtual void VarargsSetter(params object[] args) { }
 
         public override void Deserialize(NetworkReader reader)

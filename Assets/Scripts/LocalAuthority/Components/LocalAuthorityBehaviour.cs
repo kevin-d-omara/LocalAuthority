@@ -19,9 +19,7 @@ namespace LocalAuthority.Components
         /// <returns>True if the command was sent.</returns>
         protected bool SendCommand<TMsg>(short msgType, params object[] values) where TMsg : NetIdMessage, new()
         {
-            var msg = new TMsg();
-            msg.netId = netId;
-            msg.VarargsSetter(values);
+            var msg = MessageFactory.New<TMsg>(netId, values);
             return NetworkManager.singleton.client.Send(msgType, msg);
         }
 
