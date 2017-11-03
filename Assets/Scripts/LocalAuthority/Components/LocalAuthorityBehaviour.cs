@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using LocalAuthority.Message;
-using TabletopCardCompanion.Debug;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -19,7 +16,7 @@ namespace LocalAuthority.Components
         /// <summary>
         /// Invoke a message-based command on the server.
         /// </summary>
-        /// <param name="values">Values to load the message with, besides netId</param>
+        /// <param name="values">Values to load the message with, besides netId.</param>
         /// <returns>True if the command was sent.</returns>
         protected bool SendCommand<TMsg>(short msgType, params object[] values) where TMsg : NetIdMessage, new()
         {
@@ -34,7 +31,7 @@ namespace LocalAuthority.Components
         /// <param name="netMsg">The network message received in the method registered with RegisterCommand().</param>
         /// <param name="msg">The message unpacked with netMsg.ReadMessage().</param>
         /// <param name="ignoreSender">True if the action should NOT be run on the caller (i.e. for client-side prediction).</param>
-        protected void InvokeMessageRpc(Action action, NetworkMessage netMsg, MessageBase msg, bool ignoreSender = true)
+        protected void InvokeMessageRpc(Action action, NetworkMessage netMsg, MessageBase msg, bool ignoreSender = false)
         {
             if (isServer)
             {
@@ -131,7 +128,7 @@ namespace LocalAuthority.Components
         /// <param name="netMsg">The network message received in the method registered with RegisterCommand().</param>
         /// <param name="msg">The message unpacked with netMsg.ReadMessage().</param>
         /// <param name="ignoreSender">True if the action should NOT be run on the caller (i.e. for client-side prediction).</param>
-        private void ForwardMessage(NetworkMessage netMsg, MessageBase msg, bool ignoreSender = true)   // TODO: ignore sender default to false
+        private void ForwardMessage(NetworkMessage netMsg, MessageBase msg, bool ignoreSender = false)
         {
             // TODO: Does this actually work for couch coop?
             var ignoreList = new List<NetworkConnection>(NetworkServer.localConnections);
