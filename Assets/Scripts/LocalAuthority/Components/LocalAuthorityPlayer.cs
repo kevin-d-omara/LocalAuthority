@@ -1,4 +1,5 @@
 ﻿using System;
+using LocalAuthority.Message;
 using UnityEngine.Networking;
 
 namespace LocalAuthority.Components
@@ -39,6 +40,7 @@ namespace LocalAuthority.Components
             if (NetIdentity.isLocalPlayer)
             {
                 LocalPlayer = this;
+                Registration.ClearRegisteredSet();
                 PlayerInitialized?.Invoke(this, EventArgs.Empty);
             }
         }

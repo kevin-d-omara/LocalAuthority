@@ -1,8 +1,6 @@
-﻿using System;
-using LocalAuthority.Components;
+﻿using LocalAuthority.Components;
 using LocalAuthority.Message;
 using UnityEngine;
-using UnityEngine.Networking;
 
 namespace TabletopCardCompanion.GameElement
 {
@@ -93,31 +91,22 @@ namespace TabletopCardCompanion.GameElement
 
         // Commands ------------------------------------------------------------
 
-        [MessageCommand((short)MsgType.ToggleColor)]
-        private static void CmdToggleColor(NetworkMessage netMsg)
+        [MessageRpc((short)MsgType.ToggleColor, Predicted = true)]
+        private void CmdToggleColor()
         {
-            var msg = netMsg.ReadMessage<NetIdMessage>();
-            var obj = FindLocalComponent<CardController>(msg.netId);
-            Action action = () => obj.ToggleColor();
-            obj.InvokeMessageRpc(action, netMsg, msg, ignoreSender: true);
+            ToggleColor();
         }
 
-        [MessageCommand((short)MsgType.Rotate)]
-        private static void CmdRotate(NetworkMessage netMsg)
+        [MessageRpc((short)MsgType.Rotate, Predicted = true)]
+        private void CmdRotate(IntNetIdMessage msg)
         {
-            var msg = netMsg.ReadMessage<IntNetIdMessage>();
-            var obj = FindLocalComponent<CardController>(msg.netId);
-            Action action = () => obj.Rotate(msg.value);
-            obj.InvokeMessageRpc(action, netMsg, msg, ignoreSender: true);
+            Rotate(msg.value);
         }
 
-        [MessageCommand((short)MsgType.Scale)]
-        private static void CmdScale(NetworkMessage netMsg)
+        [MessageRpc((short)MsgType.Scale, Predicted = true)]
+        private void CmdScale(FloatNetIdMessage msg)
         {
-            var msg = netMsg.ReadMessage<FloatNetIdMessage>();
-            var obj = FindLocalComponent<CardController>(msg.netId);
-            Action action = () => obj.Scale(msg.value);
-            obj.InvokeMessageRpc(action, netMsg, msg, ignoreSender: true);
+            Scale(msg.value);
         }
 
 

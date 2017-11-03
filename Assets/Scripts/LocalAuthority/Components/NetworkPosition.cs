@@ -59,13 +59,9 @@ namespace LocalAuthority.Components
         }
 
         [MessageCommand((short)MsgType.UpdateTargetSyncPosition)]
-        private static void CmdUpdateTargetSyncPosition(NetworkMessage netMsg)
+        private void CmdUpdateTargetSyncPosition(Vector3NetIdMessage msg)
         {
-            var msg = netMsg.ReadMessage<Vector3NetIdMessage>();
-            var netPosition = FindLocalComponent<NetworkPosition>(msg.netId);
-            var syncPosition = msg.value;
-
-            netPosition.targetSyncPosition = syncPosition;
+            targetSyncPosition = msg.value;
         }
 
         public void HookTargetSyncPosition(Vector3 newSyncPosition)

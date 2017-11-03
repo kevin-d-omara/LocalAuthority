@@ -14,7 +14,9 @@ namespace LocalAuthority.Message
         /// Return a new instance of TMsg with all of its fields initialized.
         /// </summary>
         /// <typeparam name="TMsg">Type of message to create.</typeparam>
-        /// <param name="args">Arguments in the order of TMsg's full constructor, with netId omitted.</param>
+        /// <param name="args">An argument list for TMsg's full constructor, with netId omitted. This is an array of
+        /// objects with the same number, order, and type as the parameters of TMsg's full constructor, but with netId
+        /// omitted.</param>
         /// <returns>New TMsg instance with all fields initialized.</returns>
         public static TMsg New<TMsg>(NetworkInstanceId netId, params object[] args) where TMsg : NetIdMessage, new()
         {
