@@ -58,6 +58,7 @@ namespace LocalAuthority.Components
             SendCommand<Vector3NetIdMessage>((short) MsgType.UpdateTargetSyncPosition, transform.position);
         }
 
+        [MessageCommand((short)MsgType.UpdateTargetSyncPosition)]
         private static void CmdUpdateTargetSyncPosition(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<Vector3NetIdMessage>();
@@ -136,11 +137,6 @@ namespace LocalAuthority.Components
             base.OnStartServer();
 
             targetSyncPosition = transform.position;
-        }
-
-        protected override void RegisterCommands()
-        {
-            RegisterCommand((short)MsgType.UpdateTargetSyncPosition, CmdUpdateTargetSyncPosition);
         }
     }
 }

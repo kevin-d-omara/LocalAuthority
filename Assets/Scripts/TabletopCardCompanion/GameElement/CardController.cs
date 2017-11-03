@@ -92,6 +92,8 @@ namespace TabletopCardCompanion.GameElement
 
 
         // Commands ------------------------------------------------------------
+
+        [MessageCommand((short)MsgType.ToggleColor)]
         private static void CmdToggleColor(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<NetIdMessage>();
@@ -100,6 +102,7 @@ namespace TabletopCardCompanion.GameElement
             obj.InvokeMessageRpc(action, netMsg, msg, ignoreSender: true);
         }
 
+        [MessageCommand((short)MsgType.Rotate)]
         private static void CmdRotate(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<IntNetIdMessage>();
@@ -108,6 +111,7 @@ namespace TabletopCardCompanion.GameElement
             obj.InvokeMessageRpc(action, netMsg, msg, ignoreSender: true);
         }
 
+        [MessageCommand((short)MsgType.Scale)]
         private static void CmdScale(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<FloatNetIdMessage>();
@@ -128,13 +132,6 @@ namespace TabletopCardCompanion.GameElement
             model = GetComponent<CardModel>();
             ownership = GetComponent<Ownership>();
             networkPosition = GetComponent<NetworkPosition>();
-        }
-
-        protected override void RegisterCommands()
-        {
-            RegisterCommand((short)MsgType.ToggleColor, CmdToggleColor, registerClient: true);
-            RegisterCommand((short)MsgType.Rotate, CmdRotate, registerClient: true);
-            RegisterCommand((short)MsgType.Scale, CmdScale, registerClient: true);
         }
     }
 }

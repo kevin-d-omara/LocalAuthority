@@ -80,6 +80,8 @@ namespace LocalAuthority.Components
 
 
         // Message Commands ----------------------------------------------------
+
+        [MessageCommand((short)MsgType.RequestOwnership)]
         private static void CmdRequestOwnership(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<TwoNetIdMessage>();
@@ -93,6 +95,7 @@ namespace LocalAuthority.Components
             }
         }
 
+        [MessageCommand((short)MsgType.ReleaseOwnership)]
         private static void CmdReleaseOwnership(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<TwoNetIdMessage>();
@@ -117,12 +120,6 @@ namespace LocalAuthority.Components
         private static NetworkIdentity LocalPlayer
         {
             get { return LocalAuthorityPlayer.LocalPlayer.NetIdentity; }
-        }
-
-        protected override void RegisterCommands()
-        {
-            RegisterCommand((short)MsgType.RequestOwnership, CmdRequestOwnership);
-            RegisterCommand((short)MsgType.ReleaseOwnership, CmdReleaseOwnership);
         }
     }
 }

@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using LocalAuthority.Message;
+using TabletopCardCompanion.Debug;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -13,7 +17,7 @@ namespace LocalAuthority.Components
     public abstract class LocalAuthorityBehaviour : NetworkBehaviour
     {
         /// <summary>
-        /// Run a message-based command on the server.
+        /// Invoke a message-based command on the server.
         /// </summary>
         /// <param name="values">Values to load the message with, besides netId</param>
         /// <returns>True if the command was sent.</returns>
@@ -69,37 +73,57 @@ namespace LocalAuthority.Components
         }
 
 
+        #region Private
+
+        /// <summary>
+        /// Contains classes that have registered for message-invoked commands.
+        /// </summary>
+        private static HashSet<Type> hasRegistered = new HashSet<Type>();
 
         protected virtual void Awake()
         {
-            RegisterCommands();
+            // Register commands for classes which have not already been registered.
+            var classType = GetType();
+            if (!hasRegistered.Contains(classType))
+            {
+                hasRegistered.Add(classType);
+                RegisterCommands();
+            }
         }
 
         /// <summary>
-        /// Fill this with calls to <see cref="RegisterCommand"/>. This gets called in Awake().
+        /// Use reflection to register methods marked with the <see cref="MessageCommand"/> attribute.
         /// </summary>
-        protected abstract void RegisterCommands();
+        private void RegisterCommands()
+        {
+            // TODO: What about inheritence? I.e. DoubleSidedCardController : CardController?
+            var methods = GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+
+            foreach (var method in methods)
+            {
+                var msgCmd = method.GetCustomAttribute<MessageCommand>(true);
+                if (msgCmd != null)
+                {
+                    var callback = (NetworkMessageDelegate)Delegate.CreateDelegate(typeof(NetworkMessageDelegate), method);
+                    RegisterCommand(msgCmd.MsgType, callback);
+                }
+            }
+        }
 
         /// <summary>
-        /// Register a message-based command on the server and optionally on the client.
+        /// Register a message-based command on the server and the client.
         /// <para>
         /// Registering on the server enables <see cref="SendCommand"/> to reach the server, like a [Command].
         /// Registering on the client enables the <paramref name="callback"/> to reach the clients, like a [ClientRpc].
         /// </para>
         /// </summary>
         /// <param name="msgType">A number unique to this callback. <see cref="UnityEngine.Networking.MsgType"/></param>
-        /// <param name="callback">The function containing server code, like a [Command].</param>
-        /// <param name="registerClient">True if the client should be able to receive the callback, like a [ClientRpc].</param>
-        protected void RegisterCommand(short msgType, NetworkMessageDelegate callback, bool registerClient = false)
+        /// <param name="callback">The function containing server code.</param>
+        private void RegisterCommand(short msgType, NetworkMessageDelegate callback)
         {
             NetworkServer.RegisterHandler(msgType, callback);
-
-            if (registerClient)
-            {
-                NetworkManager.singleton.client.RegisterHandler(msgType, callback);
-            }
+            NetworkManager.singleton.client.RegisterHandler(msgType, callback);
         }
-
 
         /// <summary>
         /// Forward a message to all clients, except for the host and optionally omitting the caller.
@@ -107,7 +131,7 @@ namespace LocalAuthority.Components
         /// <param name="netMsg">The network message received in the method registered with RegisterCommand().</param>
         /// <param name="msg">The message unpacked with netMsg.ReadMessage().</param>
         /// <param name="ignoreSender">True if the action should NOT be run on the caller (i.e. for client-side prediction).</param>
-        private void ForwardMessage(NetworkMessage netMsg, MessageBase msg, bool ignoreSender = true)
+        private void ForwardMessage(NetworkMessage netMsg, MessageBase msg, bool ignoreSender = true)   // TODO: ignore sender default to false
         {
             // TODO: Does this actually work for couch coop?
             var ignoreList = new List<NetworkConnection>(NetworkServer.localConnections);
@@ -121,5 +145,7 @@ namespace LocalAuthority.Components
                 }
             }
         }
+
+        #endregion
     }
 }
