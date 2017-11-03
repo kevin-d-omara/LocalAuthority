@@ -33,6 +33,15 @@ namespace LocalAuthority.Components
             NetIdentity = GetComponent<NetworkIdentity>();
         }
 
+//        public override void OnStartClient()
+//        {
+//            base.OnStartClient();
+//            if (NetIdentity.isLocalPlayer)
+//            {
+//                Registration.ClearCache();
+//            }
+//        }
+
         public override void OnStartLocalPlayer()
         {
             base.OnStartLocalPlayer();
@@ -40,8 +49,8 @@ namespace LocalAuthority.Components
             if (NetIdentity.isLocalPlayer)
             {
                 LocalPlayer = this;
-                Registration.ClearRegisteredSet();
                 PlayerInitialized?.Invoke(this, EventArgs.Empty);
+                Registration.ClearCache();
             }
         }
     }

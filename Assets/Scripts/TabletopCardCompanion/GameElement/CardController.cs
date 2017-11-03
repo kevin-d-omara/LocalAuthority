@@ -13,8 +13,6 @@ namespace TabletopCardCompanion.GameElement
         {
             if (Input.GetButtonDown(AxisName.ToggleColor))
             {
-                ToggleColor();
-
                 SendCommand<NetIdMessage>((short)MsgType.ToggleColor);
             }
 
@@ -23,8 +21,6 @@ namespace TabletopCardCompanion.GameElement
                 var direction = Input.GetAxis("Rotate") > 0 ? 1 : -1;
                 var degrees = 60 * direction;
 
-                Rotate(degrees);
-
                 SendCommand<IntNetIdMessage>((short)MsgType.Rotate, degrees);
             }
 
@@ -32,8 +28,6 @@ namespace TabletopCardCompanion.GameElement
             {
                 var direction = Input.GetAxis("Scale") > 0 ? 1 : -1;
                 var percent = 0.1f * direction;
-
-                Scale(percent);
 
                 SendCommand<FloatNetIdMessage>((short)MsgType.Scale, percent);
             }
@@ -71,42 +65,27 @@ namespace TabletopCardCompanion.GameElement
         }
 
 
-        // API (Controls) ------------------------------------------------------
-        private void ToggleColor()
+        // Commands ------------------------------------------------------------
+
+        [MessageRpc((short)MsgType.ToggleColor, Predicted = true)]
+        private void RpcToggleColor()
         {
             model.HookIsToggled(!model.IsToggled);
         }
 
-        private void Rotate(int degrees)
+        [MessageRpc((short)MsgType.Rotate, Predicted = true)]
+        private void RpcRotate(IntNetIdMessage msg)
         {
+            var degrees = msg.value;
             model.HookRotation(degrees);
         }
 
-        private void Scale(float percent)
+        [MessageRpc((short)MsgType.Scale, Predicted = true)]
+        private void RpcScale(FloatNetIdMessage msg)
         {
+            var percent = msg.value;
             var newScale = model.LocalScale * (1f + percent);
             model.HookLocalScale(newScale);
-        }
-
-
-        // Commands ------------------------------------------------------------
-
-        [MessageRpc((short)MsgType.ToggleColor, Predicted = true)]
-        private void CmdToggleColor()
-        {
-            ToggleColor();
-        }
-
-        [MessageRpc((short)MsgType.Rotate, Predicted = true)]
-        private void CmdRotate(IntNetIdMessage msg)
-        {
-            Rotate(msg.value);
-        }
-
-        [MessageRpc((short)MsgType.Scale, Predicted = true)]
-        private void CmdScale(FloatNetIdMessage msg)
-        {
-            Scale(msg.value);
         }
 
 

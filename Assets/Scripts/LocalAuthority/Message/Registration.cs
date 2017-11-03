@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using LocalAuthority.Components;
+using TabletopCardCompanion.Debug;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -24,6 +25,8 @@ namespace LocalAuthority.Message
             }
             hasRegistered.Add(classType);
 
+            DebugStreamer.AddMessage("Registering: " + classType);
+
 
             // TODO: What about inheritence? I.e. DoubleSidedCardController : CardController?
             var methods = classType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
@@ -42,20 +45,31 @@ namespace LocalAuthority.Message
 
                     Type messageType = GetValidParameterType(method);
                     var types = new Type[] { messageType, classType };
-                    RegisterCommand(method, attribute, types);
+                    attribute.RegisterMessage(method, types);
                 }
             }
         }
 
         /// <summary>
-        /// Empty the list of classes that have registered for message-invoked commands.
-        /// This is necessary each time the client joins a new game, because cached connection data has gone stale.
+        /// Call this each time the client joins a new game to clear stale connection data.
         /// </summary>
-        public static void ClearRegisteredSet()
+        public static void ClearCache()
         {
+            DebugStreamer.AddMessage("Clearing cache.");
             hasRegistered.Clear();
         }
 
+        /// <summary>
+        /// Run the client-side prediction callback for this message id, if it exists. <see cref="MessageRpc.Predicted"/>
+        /// </summary>
+        public static void InvokePrediction(short msgType, NetIdMessage msg)
+        {
+            Action<NetIdMessage> callback;
+            if (predictionCallbacks.TryGetValue(msgType, out callback))
+            {
+                callback(msg);
+            }
+        }
 
         #region Private
 
@@ -107,45 +121,19 @@ namespace LocalAuthority.Message
             return parameters.Length == 0 ? typeof(NetIdMessage) : parameters[0].ParameterType;
         }
 
-
-        // Registration --------------------------------------------------------
-
         /// <summary>
-        /// A non-generic version of <see cref="RegisterCommand{TMsg,TComp}"/> that requires information obtained using reflection.
+        /// Store the client-side prediction callback for a specific message id.
         /// </summary>
-        /// <param name="method">The function to register.</param>
-        /// <param name="attribute">The attribute attached to the method.</param>
-        /// <param name="types">The two types from <see cref="RegisterCommand{TMsg,TComp}"/></param>
-        private static void RegisterCommand(MethodInfo method, Message attribute, Type[] types)
+        internal static void RegisterPrediction(short msgType, Action<NetIdMessage> callback)
         {
-            // Same number, order, and type as parameters to RegisterCommand<TMsg, TComp>().
-            var args = new object[] { method, attribute };
-
-            var registerCommand = RegisterCommandMethodInfo.MakeGenericMethod(types);
-            registerCommand.Invoke(null, args);
-        }
-
-        /// <summary>
-        /// Register a message-based command on the server and the client.
-        /// <para>
-        /// Registering on the server enables the method to be called on the server like a [Command], except invoked with <see cref="LocalAuthorityBehaviour.SendCommand{TMsg}"/>.
-        /// Registering on the client enables the method to be called on all clients, like a [ClientRpc], except invoked with <see cref="LocalAuthorityBehaviour.InvokeMessageRpc"/>.
-        /// </para>
-        /// </summary>
-        /// <typeparam name="TMsg">Type of network message that the method takes as its only parameter.</typeparam>
-        /// <typeparam name="TComp">Type of component where the method code is written.</typeparam>
-        /// <param name="method">The function to register.</param>
-        /// <param name="attribute">The attribute attached to the method.</param>
-        private static void RegisterCommand<TMsg, TComp>(MethodInfo method, Message attribute)
-            where TMsg : NetIdMessage, new()
-            where TComp : LocalAuthorityBehaviour
-        {
-            var callback = attribute.GetCallback<TMsg, TComp>(method);
-            attribute.RegisterMessage(callback);
+            if (!predictionCallbacks.ContainsKey(msgType))
+            {
+                predictionCallbacks.Add(msgType, callback);
+            }
         }
 
 
-        // Initialization ------------------------------------------------------
+        // Data ----------------------------------------------------------------
 
         /// <summary>
         /// Classes that have registered for message-invoked commands. This is used to prevent duplicate and expensive
@@ -154,17 +142,9 @@ namespace LocalAuthority.Message
         private static readonly HashSet<Type> hasRegistered = new HashSet<Type>();
 
         /// <summary>
-        /// Cached MethodInfo for <see cref="RegisterCommand{TMsg,TComp}"/>.
+        /// Callbacks for message ids with client-side prediction enabled.
         /// </summary>
-        private static MethodInfo RegisterCommandMethodInfo { get; }
-
-        static Registration()
-        {
-            var types = new Type[] {typeof(MethodInfo), typeof(Message)};
-            var flags = BindingFlags.Static | BindingFlags.NonPublic;
-            var info = typeof(Registration).GetMethod(nameof(RegisterCommand), flags, null, types, null);
-            RegisterCommandMethodInfo = info;
-        }
+        private static Dictionary<short, Action<NetIdMessage>> predictionCallbacks = new Dictionary<short, Action<NetIdMessage>>();
 
         #endregion
     }

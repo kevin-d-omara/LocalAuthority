@@ -13,13 +13,14 @@ namespace LocalAuthority.Components
     public abstract class LocalAuthorityBehaviour : NetworkBehaviour
     {
         /// <summary>
-        /// Invoke a message-based command on the server.
+        /// Invoke the message-based command on the server, or rpc on all clients.
         /// </summary>
         /// <param name="values">Values to load the message with, besides netId.</param>
         /// <returns>True if the command was sent.</returns>
         protected bool SendCommand<TMsg>(short msgType, params object[] values) where TMsg : NetIdMessage, new()
         {
             var msg = MessageFactory.New<TMsg>(netId, values);
+            Registration.InvokePrediction(msgType, msg);
             return NetworkManager.singleton.client.Send(msgType, msg);
         }
 
