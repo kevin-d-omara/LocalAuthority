@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using LocalAuthority.Components;
 using TabletopCardCompanion.Debug;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -96,19 +95,13 @@ namespace LocalAuthority.Message
             if (parameters.Length == 1)
             {
                 var argType = parameters[0].ParameterType;
-                if (!IsSameOrSubclass(typeof(NetIdMessage), argType))
+                if (!Utility.IsSameOrSubclass(typeof(NetIdMessage), argType))
                 {
                     return "Cannot register method: " + method.Name + ", because its first argument does not derive from: " + typeof(NetIdMessage);
                 }
             }
 
             return "";
-        }
-
-        // TODO: move elsewhere
-        public static bool IsSameOrSubclass(Type potentialBase, Type potentialDescendant)
-        {
-            return potentialDescendant.IsSubclassOf(potentialBase) || potentialDescendant == potentialBase;
         }
 
         /// <summary>

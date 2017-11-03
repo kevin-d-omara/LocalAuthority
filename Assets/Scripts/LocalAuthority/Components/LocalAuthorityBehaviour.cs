@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using LocalAuthority.Message;
-using UnityEngine;
 using UnityEngine.Networking;
 
 namespace LocalAuthority.Components
@@ -22,32 +21,6 @@ namespace LocalAuthority.Components
             var msg = MessageFactory.New<TMsg>(netId, values);
             Registration.InvokePrediction(msgType, msg);
             return NetworkManager.singleton.client.Send(msgType, msg);
-        }
-
-        /// <summary>
-        /// Find a component of type T attached to a game object with the given network id.
-        /// </summary>
-        /// <typeparam name="T">Type of the component to find.</typeparam>
-        /// <param name="netId">The netId of the networked object.</param>
-        /// <returns>The component attached to the game object with matching netId, or default(T) if the object or
-        /// component are not found.</returns>
-        public static T FindLocalComponent<T>(NetworkInstanceId netId)
-        {
-            var foundObject = ClientScene.FindLocalObject(netId);
-            if (foundObject == null)
-            {
-                if (LogFilter.logError) { Debug.LogError("No GameObject exists for the given NetworkInstanceId: " + netId); }
-                return default(T);
-            }
-
-            var foundComponent = foundObject.GetComponent<T>();
-            if (foundComponent == null)
-            {
-                if (LogFilter.logError) { Debug.LogError("The GameObject " + foundObject + " does not have a " + typeof(T) + " component attached."); }
-                return default(T);
-            }
-
-            return foundComponent;
         }
 
 

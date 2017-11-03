@@ -112,7 +112,7 @@ namespace LocalAuthority.Message
             return netMsg =>
             {
                 var msg = netMsg.ReadMessage<TMsg>();
-                var obj = LocalAuthorityBehaviour.FindLocalComponent<TComp>(msg.netId);
+                var obj = Utility.FindLocalComponent<TComp>(msg.netId);
 
                 if (typeof(TMsg) == typeof(NetIdMessage))
                 {
@@ -158,7 +158,7 @@ namespace LocalAuthority.Message
             return netMsg =>
             {
                 var msg = netMsg.ReadMessage<TMsg>();
-                var obj = LocalAuthorityBehaviour.FindLocalComponent<TComp>(msg.netId);
+                var obj = Utility.FindLocalComponent<TComp>(msg.netId);
 
                 Action rpc;
                 if (typeof(TMsg) == typeof(NetIdMessage))
@@ -186,7 +186,7 @@ namespace LocalAuthority.Message
             return netIdMsg =>
             {
                 var msg = (TMsg)netIdMsg;
-                var obj = LocalAuthorityBehaviour.FindLocalComponent<TComp>(msg.netId);
+                var obj = Utility.FindLocalComponent<TComp>(msg.netId);
 
                 if (typeof(TMsg) == typeof(NetIdMessage))
                 {
