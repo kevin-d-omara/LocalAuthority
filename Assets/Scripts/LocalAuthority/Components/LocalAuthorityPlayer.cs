@@ -1,5 +1,4 @@
 ﻿using System;
-using LocalAuthority.Message;
 using UnityEngine.Networking;
 
 namespace LocalAuthority.Components
@@ -50,7 +49,6 @@ namespace LocalAuthority.Components
             {
                 LocalPlayer = this;
                 PlayerInitialized?.Invoke(this, EventArgs.Empty);
-                Registration.ClearCache();
             }
         }
     }

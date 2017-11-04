@@ -34,6 +34,7 @@ namespace LocalAuthority.Message
             // Same number, order, and type as parameters to RegisterMessage<TMsg, TComp>().
             var args = new object[] { method };
 
+            // Call RegisterMessage<TMsg, TComp> with correct generic types.
             var registerMessage = RegisterMessageInfo.MakeGenericMethod(types);
             registerMessage.Invoke(this, args);
         }
@@ -48,8 +49,13 @@ namespace LocalAuthority.Message
         /// <typeparam name="TMsg">Type of network message that the method takes as its only parameter.</typeparam>
         /// <typeparam name="TComp">Type of component where the method code is written.</typeparam>
         /// <param name="method">The function to register.</param>
-        public abstract void RegisterMessage<TMsg, TComp>(MethodInfo method) where TMsg : NetIdMessage, new()
-                                                                             where TComp : LocalAuthorityBehaviour;
+        public virtual void RegisterMessage<TMsg, TComp>(MethodInfo method) where TMsg : NetIdMessage, new()
+                                                                            where TComp : LocalAuthorityBehaviour
+        {
+            var callback = GetCallback<TMsg, TComp>(method);
+            RegisterWithServer(callback);
+            RegisterWithClient(callback);
+        }
 
 
         /// <summary>
@@ -58,6 +64,14 @@ namespace LocalAuthority.Message
         protected abstract NetworkMessageDelegate GetCallback<TMsg, TComp>(MethodInfo callback)
             where TMsg : NetIdMessage, new()
             where TComp : LocalAuthorityBehaviour;
+
+        /// <summary>
+        /// Return true if the specified message id has already been registered to a callback on the server or client.
+        /// </summary>
+        public static bool HasBeenRegistered(short msgType)
+        {
+            return NetworkManager.singleton.client.handlers.ContainsKey(msgType);
+        }
 
         /// <summary>
         /// Register the callback so that it may be invoked on the server from a client.
@@ -92,6 +106,8 @@ namespace LocalAuthority.Message
         }
     }
 
+
+
     /// <summary>
     /// The attributed method will behave like a <see cref="CommandAttribute"/>.
     /// </summary>
@@ -125,13 +141,9 @@ namespace LocalAuthority.Message
                 }
             };
         }
-
-        public override void RegisterMessage<TMsg, TComp>(MethodInfo method)
-        {
-            var callback = GetCallback<TMsg, TComp>(method);
-            RegisterWithServer(callback);
-        }
     }
+
+
 
     /// <summary>
     /// The attributed method will behave like a <see cref="ClientRpcAttribute"/>.
@@ -202,9 +214,7 @@ namespace LocalAuthority.Message
 
         public override void RegisterMessage<TMsg, TComp>(MethodInfo method)
         {
-            var callback = GetCallback<TMsg, TComp>(method);
-            RegisterWithServer(callback);
-            RegisterWithClient(callback);
+            base.RegisterMessage<TMsg, TComp>(method);
 
             if (Predicted)
             {

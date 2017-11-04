@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using TabletopCardCompanion.Debug;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -18,14 +17,12 @@ namespace LocalAuthority.Message
         /// </summary>
         public static void RegisterCommands(Type classType)
         {
-            if (hasRegistered.Contains(classType))
+            // If the class has already registered with the server, exit early to avoid expensive reflection operations.
+            short msgType;
+            if (messageTypes.TryGetValue(classType, out msgType))
             {
-                return;
+                if (Message.HasBeenRegistered(msgType)) return;
             }
-            hasRegistered.Add(classType);
-
-            DebugStreamer.AddMessage("Registering: " + classType);
-
 
             // TODO: What about inheritence? I.e. DoubleSidedCardController : CardController?
             var methods = classType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
@@ -42,20 +39,18 @@ namespace LocalAuthority.Message
                         return;
                     }
 
+                    // Store only the first method's message type, because we only need a single value
+                    // per class to check Message.HasBeenRegistered().
+                    if (!messageTypes.ContainsKey(classType))
+                    {
+                        messageTypes.Add(classType, attribute.MsgType);
+                    }
+
                     Type messageType = GetValidParameterType(method);
                     var types = new Type[] { messageType, classType };
                     attribute.RegisterMessage(method, types);
                 }
             }
-        }
-
-        /// <summary>
-        /// Call this each time the client joins a new game to clear stale connection data.
-        /// </summary>
-        public static void ClearCache()
-        {
-            DebugStreamer.AddMessage("Clearing cache.");
-            hasRegistered.Clear();
         }
 
         /// <summary>
@@ -69,6 +64,7 @@ namespace LocalAuthority.Message
                 callback(msg);
             }
         }
+
 
         #region Private
 
@@ -87,8 +83,7 @@ namespace LocalAuthority.Message
             // Should only take 0 or 1 arguments.
             if (parameters.Length > 1)
             {
-                // TODO: See that method.Name is better than method.
-                return "Cannot register method: " + method.Name + ", because it takes more than 1 argument. It should only take a single argument.";
+                return "Cannot register method: " + method + ", because it has more than 1 parameter. It can only take zero or one parameters.";
             }
 
             // The first parameter must derive from NetIdMessage.
@@ -97,7 +92,7 @@ namespace LocalAuthority.Message
                 var argType = parameters[0].ParameterType;
                 if (!Utility.IsSameOrSubclass(typeof(NetIdMessage), argType))
                 {
-                    return "Cannot register method: " + method.Name + ", because its first argument does not derive from: " + typeof(NetIdMessage);
+                    return "Cannot register method: " + method + ", because its first argument does not derive from: " + typeof(NetIdMessage);
                 }
             }
 
@@ -129,10 +124,9 @@ namespace LocalAuthority.Message
         // Data ----------------------------------------------------------------
 
         /// <summary>
-        /// Classes that have registered for message-invoked commands. This is used to prevent duplicate and expensive
-        /// reflection operations from running each time a new object is instantiated.
+        /// A cache with one message id per class. Used to prevent uneccessary and expensive registrations.
         /// </summary>
-        private static readonly HashSet<Type> hasRegistered = new HashSet<Type>();
+        private static readonly Dictionary<Type, short> messageTypes = new Dictionary<Type, short>();
 
         /// <summary>
         /// Callbacks for message ids with client-side prediction enabled.
