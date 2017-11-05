@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
+﻿using System.Reflection;
 using LocalAuthority.Message;
 using UnityEngine.Networking;
 
 namespace LocalAuthority.Components
 {
     /// <summary>
-    /// Extend this class instead of <see cref="NetworkBehaviour"/> to enable message-based commands.
+    /// Extend this class instead of <see cref="NetworkBehaviour"/> to enable message-based commands and rpcs. Place the
+    /// attributes <see cref="MessageCommand"/> and <see cref="MessageRpc"/> above methods. Invoke these with
+    /// <see cref="InvokeCommand"/> and <see cref="InvokeRpc"/>
     /// </summary>
-    // TODO: Better class description.
     public abstract class LocalAuthorityBehaviour : NetworkBehaviour
     {
         /// <summary>
@@ -36,9 +35,6 @@ namespace LocalAuthority.Components
             return InvokeCommandOrRpc(methodName, values);
         }
 
-
-        #region Private
-
         /// <summary>
         /// Invoke the message-based command or rpc on the server or clients.
         /// <remarks>
@@ -61,52 +57,10 @@ namespace LocalAuthority.Components
             return NetworkManager.singleton.client.Send(msgType, msg);
         }
 
-        /// <summary>
-        /// Run the action on all clients (like an RPC), except for the host and optionally the caller.
-        /// </summary>
-        /// <param name="action">A closure with all arguments filled in. Ex: Action action = () => Foo(bar);</param>
-        /// <param name="netMsg">The network message received in the method registered with RegisterCommand().</param>
-        /// <param name="msg">The message unpacked with netMsg.ReadMessage().</param>
-        /// <param name="ignoreSender">True if the action should NOT be run on the caller (i.e. for client-side prediction).</param>
-        internal void InvokeMessageRpc(Action action, NetworkMessage netMsg, MessageBase msg, bool ignoreSender = false)
-        {
-            if (isServer)
-            {
-                ForwardMessage(netMsg, msg, ignoreSender);
-
-                if (ignoreSender && NetworkServer.localConnections.Contains(netMsg.conn)) return;
-            }
-
-            action();
-        }
-
-        /// <summary>
-        /// Forward a message to all clients, except for the host and optionally omitting the caller.
-        /// </summary>
-        /// <param name="netMsg">The network message received in the method registered with RegisterCommand().</param>
-        /// <param name="msg">The message unpacked with netMsg.ReadMessage().</param>
-        /// <param name="ignoreSender">True if the action should NOT be run on the caller (i.e. for client-side prediction).</param>
-        private void ForwardMessage(NetworkMessage netMsg, MessageBase msg, bool ignoreSender = false)
-        {
-            // TODO: Does this actually work for couch coop?
-            var ignoreList = new List<NetworkConnection>(NetworkServer.localConnections);
-            if (ignoreSender) ignoreList.Add(netMsg.conn);
-
-            foreach (var conn in NetworkServer.connections)
-            {
-                if (!ignoreList.Contains(conn))
-                {
-                    conn.Send(netMsg.msgType, msg);
-                }
-            }
-        }
-
         protected virtual void Awake()
         {
             var classType = GetType();
             Registration.RegisterCommands(classType);
         }
-
-        #endregion
     }
 }

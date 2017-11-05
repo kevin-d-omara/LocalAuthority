@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using LocalAuthority.Components;
+using UnityEngine;
 using UnityEngine.Networking;
 
 namespace LocalAuthority.Message
@@ -10,15 +12,17 @@ namespace LocalAuthority.Message
     /// to be invoked on the server or clients by sending a message from a client.
     /// <para>
     /// [Message] functions may be invoked from any LocalAuthorityBehaviour, even those not attached to the
-    /// player GameObject. Invoke a [Message] by using <see cref="LocalAuthorityBehaviour.SendCommand"/>.
+    /// player GameObject. Invoke with <see cref="LocalAuthorityBehaviour.InvokeCommand"/> or <see cref="LocalAuthorityBehaviour.InvokeRpc"/>.
     /// </para>
     /// <para>
-    /// Client-side prediction is built-in and may be enabled by adding ClientSidePrediction = true in the attribute constructor.
+    /// Client-side prediction is supported and may be enabled by adding ClientSidePrediction = true in the attribute constructor.
     /// </para>
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public abstract class Message : Attribute
     {
+        // Data ----------------------------------------------------------------
+
         /// <summary>
         /// A number unique to this callback. <see cref="MsgType"/> and <see cref="UnityEngine.Networking.MsgType"/>
         /// </summary>
@@ -29,9 +33,21 @@ namespace LocalAuthority.Message
         /// </summary>
         public bool ClientSidePrediction { get; set; }
 
-        // TODO: documentation
+
+        // Methods -------------------------------------------------------------
+
+        /// <summary>
+        /// Register a message-based callback on the server and clients.
+        /// </summary>
+        /// <param name="classType">Type of script where the method code is written.</param>
         public void RegisterMessage(MethodInfo method, Type classType)
         {
+            if (!Utility.IsSameOrSubclass(typeof(LocalAuthorityBehaviour), classType))
+            {
+                if (LogFilter.logFatal) { Debug.LogError("Cannot register method " + method + ". Containing clas " + classType + " must inherit from " + typeof(LocalAuthorityBehaviour)); }
+                return;
+            }
+
             // Same number, order, and type as parameters to RegisterMessage<TMsg, TComp>().
             var args = new object[] { method };
 
@@ -40,16 +56,7 @@ namespace LocalAuthority.Message
             registerMessage.Invoke(this, args);
         }
 
-        /// <summary>
-        /// Register a message-based command on the server and clients.
-        /// <para>
-        /// Registering on the server enables the method to be called on the server, like a [Command].
-        /// Registering on the client enables the method to be called on all clients, like a [ClientRpc].
-        /// </para>
-        /// </summary>
-        /// <typeparam name="TComp">Type of component where the method code is written.</typeparam>
-        /// <param name="method">The function to register.</param>
-        public virtual void RegisterMessage<TComp>(MethodInfo method) where TComp : LocalAuthorityBehaviour
+        private void RegisterMessage<TComp>(MethodInfo method) where TComp : LocalAuthorityBehaviour
         {
             var callback = GetCallback<TComp>(method);
             RegisterWithServer(callback);
@@ -60,7 +67,6 @@ namespace LocalAuthority.Message
                 Registration.RegisterPredictedRpc(MsgType, method);
             }
         }
-
 
         /// <summary>
         /// Return a callback that behaves like a <see cref="CommandAttribute"/> or <see cref="ClientRpcAttribute"/>.
@@ -103,7 +109,7 @@ namespace LocalAuthority.Message
         static Message()
         {
             var parameterTypes = new Type[] { typeof(MethodInfo) };
-            var flags = BindingFlags.Instance | BindingFlags.Public;
+            var flags = BindingFlags.Instance | BindingFlags.NonPublic;
             var info = typeof(Message).GetMethod(nameof(RegisterMessage), flags, null, parameterTypes, null);
             RegisterMessageInfo = info;
         }
@@ -113,6 +119,7 @@ namespace LocalAuthority.Message
 
     /// <summary>
     /// The attributed method will behave like a <see cref="CommandAttribute"/>.
+    /// Invoke with <see cref="LocalAuthorityBehaviour.InvokeCommand"/>.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public class MessageCommand : Message
@@ -145,6 +152,7 @@ namespace LocalAuthority.Message
 
     /// <summary>
     /// The attributed method will behave like a <see cref="ClientRpcAttribute"/>.
+    /// Invoke with <see cref="LocalAuthorityBehaviour.InvokeRpc"/>.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public class MessageRpc : Message
@@ -169,8 +177,45 @@ namespace LocalAuthority.Message
                 var obj = Utility.FindLocalComponent<TComp>(msg.netId);
 
                 Action rpc = () => callback.Invoke(obj, msg.args);
-                obj.InvokeMessageRpc(rpc, netMsg, msg, ClientSidePrediction);
+                InvokeRpcOnClients(obj, rpc, netMsg, msg);
             };
+        }
+
+        /// <summary>
+        /// Run the action on all clients except for the host and optionally the caller.
+        /// </summary>
+        /// <param name="action">The action to run on the clients.</param>
+        /// <param name="netMsg">The network message passed in to the registered callback.</param>
+        /// <param name="msg">The message to forward.</param>
+        /// <param name="clientSidePrediction">True if the action has already been run on the caller.</param>
+        private void InvokeRpcOnClients(LocalAuthorityBehaviour obj, Action action, NetworkMessage netMsg, MessageBase msg)
+        {
+            if (obj.isServer)
+            {
+                ForwardMessage(netMsg, msg);
+
+                if (ClientSidePrediction && NetworkServer.localConnections.Contains(netMsg.conn)) return;
+            }
+
+            action();
+        }
+
+        /// <summary>
+        /// Forward a message to all clients, except for the host and optionally the caller.
+        /// </summary>
+        private void ForwardMessage(NetworkMessage netMsg, MessageBase msg)
+        {
+            // TODO: Does this actually work for couch coop?
+            var ignoreList = new List<NetworkConnection>(NetworkServer.localConnections);
+            if (ClientSidePrediction) ignoreList.Add(netMsg.conn);
+
+            foreach (var conn in NetworkServer.connections)
+            {
+                if (!ignoreList.Contains(conn))
+                {
+                    conn.Send(netMsg.msgType, msg);
+                }
+            }
         }
     }
 }
