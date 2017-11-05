@@ -12,6 +12,9 @@ namespace LocalAuthority.Message
     /// [Message] functions may be invoked from any LocalAuthorityBehaviour, even those not attached to the
     /// player GameObject. Invoke a [Message] by using <see cref="LocalAuthorityBehaviour.SendCommand"/>.
     /// </para>
+    /// <para>
+    /// Client-side prediction is built-in and may be enabled by adding ClientSidePrediction = true in the attribute constructor.
+    /// </para>
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public abstract class Message : Attribute
@@ -21,6 +24,10 @@ namespace LocalAuthority.Message
         /// </summary>
         public short MsgType { get; set; }
 
+        /// <summary>
+        /// True if client-side prediction is enabled. The attributed method will be run immediately on the caller.
+        /// </summary>
+        public bool ClientSidePrediction { get; set; }
 
         // TODO: documentation
         public void RegisterMessage(MethodInfo method, Type classType)
@@ -47,6 +54,11 @@ namespace LocalAuthority.Message
             var callback = GetCallback<TComp>(method);
             RegisterWithServer(callback);
             RegisterWithClient(callback);
+
+            if (ClientSidePrediction)
+            {
+                Registration.RegisterPredictedRpc(MsgType, method);
+            }
         }
 
 
@@ -84,7 +96,7 @@ namespace LocalAuthority.Message
         // Initialization ------------------------------------------------------
 
         /// <summary>
-        /// Cached MethodInfo for <see cref="RegisterMessage{TMsg,TComp}"/>.
+        /// Cached MethodInfo for <see cref="RegisterMessage{TComp}"/>.
         /// </summary>
         private static MethodInfo RegisterMessageInfo { get; }
 
@@ -137,11 +149,6 @@ namespace LocalAuthority.Message
     [AttributeUsage(AttributeTargets.Method)]
     public class MessageRpc : Message
     {
-        /// <summary>
-        /// True if the Rpc should be run immediately on the caller for client-side prediction.
-        /// </summary>
-        public bool ClientSidePrediction { get; set; }
-
         public MessageRpc(short msgType)
         {
             MsgType = msgType;
@@ -164,16 +171,6 @@ namespace LocalAuthority.Message
                 Action rpc = () => callback.Invoke(obj, msg.args);
                 obj.InvokeMessageRpc(rpc, netMsg, msg, ClientSidePrediction);
             };
-        }
-
-        public override void RegisterMessage<TComp>(MethodInfo method)
-        {
-            base.RegisterMessage<TComp>(method);
-
-            if (ClientSidePrediction)
-            {
-                Registration.RegisterPredictedRpc(MsgType, method);
-            }
         }
     }
 }
