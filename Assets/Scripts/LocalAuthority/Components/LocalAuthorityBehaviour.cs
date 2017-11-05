@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using LocalAuthority.Message;
 using UnityEngine.Networking;
 
@@ -19,7 +20,15 @@ namespace LocalAuthority.Components
         protected bool SendCommand<TMsg>(short msgType, params object[] values) where TMsg : NetIdMessage, new()
         {
             var msg = MessageFactory.New<TMsg>(netId, values);
-            Registration.InvokePrediction(msgType, msg);
+
+//            Registration.InvokePrediction(msgType, values);
+            MethodInfo method;
+            if (Registration.RpcsWithPrediction.TryGetValue(msgType, out method))
+            {
+                var args = typeof(TMsg) == typeof(NetIdMessage) ? null : new object[] { msg };
+                method.Invoke(this, args);
+            }
+
             return NetworkManager.singleton.client.Send(msgType, msg);
         }
 

@@ -187,39 +187,13 @@ namespace LocalAuthority.Message
             };
         }
 
-        /// <summary>
-        /// Return a callback for the callback.
-        /// This is used to run the callback immediately on the caller for client-side prediction.
-        /// </summary>
-        private Action<NetIdMessage> GetPredictedCallback<TMsg, TComp>(MethodInfo callback)
-            where TMsg : NetIdMessage, new()
-            where TComp : LocalAuthorityBehaviour
-        {
-            return netIdMsg =>
-            {
-                var msg = (TMsg)netIdMsg;
-                var obj = Utility.FindLocalComponent<TComp>(msg.netId);
-
-                if (typeof(TMsg) == typeof(NetIdMessage))
-                {
-                    // The method takes no arguments. NetIdMessage was only used for locating the object.
-                    callback.Invoke(obj, null);
-                }
-                else
-                {
-                    callback.Invoke(obj, new object[] { msg });
-                }
-            };
-        }
-
         public override void RegisterMessage<TMsg, TComp>(MethodInfo method)
         {
             base.RegisterMessage<TMsg, TComp>(method);
 
             if (Predicted)
             {
-                var predictionCallback = GetPredictedCallback<TMsg, TComp>(method);
-                Registration.RegisterPrediction(MsgType, predictionCallback);
+                Registration.RegisterPredictedRpc(MsgType, method);
             }
         }
     }

@@ -17,6 +17,8 @@ namespace LocalAuthority.Message
         /// </summary>
         public static void RegisterCommands(Type classType)
         {
+            // Registration ----------------------------------------------------
+
             // If the class has already registered with the server, exit early to avoid expensive reflection operations.
             short msgType;
             if (messageTypes.TryGetValue(classType, out msgType))
@@ -53,20 +55,20 @@ namespace LocalAuthority.Message
             }
         }
 
+
+        #region Private
+
         /// <summary>
-        /// Run the client-side prediction callback for this message id, if it exists. <see cref="MessageRpc.Predicted"/>
+        /// Store methods which have client-side prediction enabled.
         /// </summary>
-        public static void InvokePrediction(short msgType, NetIdMessage msg)
+        internal static void RegisterPredictedRpc(short msgType, MethodInfo method)
         {
-            Action<NetIdMessage> callback;
-            if (predictionCallbacks.TryGetValue(msgType, out callback))
+            if (!RpcsWithPrediction.ContainsKey(msgType))
             {
-                callback(msg);
+                RpcsWithPrediction.Add(msgType, method);
             }
         }
 
-
-        #region Private
 
         // Validation ----------------------------------------------------------
 
@@ -109,18 +111,6 @@ namespace LocalAuthority.Message
             return parameters.Length == 0 ? typeof(NetIdMessage) : parameters[0].ParameterType;
         }
 
-        /// <summary>
-        /// Store the client-side prediction callback for a specific message id.
-        /// </summary>
-        internal static void RegisterPrediction(short msgType, Action<NetIdMessage> callback)
-        {
-            if (!predictionCallbacks.ContainsKey(msgType))
-            {
-                predictionCallbacks.Add(msgType, callback);
-            }
-        }
-
-
         // Data ----------------------------------------------------------------
 
         /// <summary>
@@ -129,9 +119,14 @@ namespace LocalAuthority.Message
         private static readonly Dictionary<Type, short> messageTypes = new Dictionary<Type, short>();
 
         /// <summary>
-        /// Callbacks for message ids with client-side prediction enabled.
+        /// Mapping from method name to message id.
         /// </summary>
-        private static Dictionary<short, Action<NetIdMessage>> predictionCallbacks = new Dictionary<short, Action<NetIdMessage>>();
+        internal static readonly Dictionary<string, short> MsgTypes = new Dictionary<string, short>();
+
+        /// <summary>
+        /// Mapping from message id to method info for methods with client-side prediction enabled.
+        /// </summary>
+        internal static readonly Dictionary<short, MethodInfo> RpcsWithPrediction = new Dictionary<short, MethodInfo>();
 
         #endregion
     }
