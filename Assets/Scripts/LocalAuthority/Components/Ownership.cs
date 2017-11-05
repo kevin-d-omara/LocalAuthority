@@ -81,10 +81,10 @@ namespace LocalAuthority.Components
 
         // Message Commands ----------------------------------------------------
 
-        [MessageCommand((short)MsgType.RequestOwnership)]
-        private void CmdRequestOwnership(TwoNetIdMessage msg)
+        [MessageCommand((short)MsgType.RequestOwnership, typeof(TwoNetIdMessage))]
+        private void CmdRequestOwnership(NetworkInstanceId netId2)
         {
-            var requester = Utility.FindLocalComponent<NetworkIdentity>(msg.netId2);
+            var requester = Utility.FindLocalComponent<NetworkIdentity>(netId2);
 
             // Prevent players from stealing ownership.
             if (IsOwnedByNone)
@@ -93,10 +93,10 @@ namespace LocalAuthority.Components
             }
         }
 
-        [MessageCommand((short)MsgType.ReleaseOwnership)]
-        private void CmdReleaseOwnership(TwoNetIdMessage msg)
+        [MessageCommand((short)MsgType.ReleaseOwnership, typeof(TwoNetIdMessage))]
+        private void CmdReleaseOwnership(NetworkInstanceId netId2)
         {
-            var requester = Utility.FindLocalComponent<NetworkIdentity>(msg.netId2);
+            var requester = Utility.FindLocalComponent<NetworkIdentity>(netId2);
 
             // Prevent players from dropping someone else's ownership.
             if (Owner == requester)

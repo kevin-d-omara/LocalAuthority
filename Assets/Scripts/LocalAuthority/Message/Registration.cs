@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using UnityEngine;
-using UnityEngine.Networking;
 
 namespace LocalAuthority.Message
 {
@@ -34,13 +32,6 @@ namespace LocalAuthority.Message
                 var attribute = method.GetCustomAttribute<Message>(true);
                 if (attribute != null)
                 {
-                    var error = HasValidSignature(method);
-                    if (error.Length != 0)
-                    {
-                        if (LogFilter.logFatal) { Debug.LogError(error); }
-                        return;
-                    }
-
                     // Store only the first method's message type, because we only need a single value
                     // per class to check Message.HasBeenRegistered().
                     if (!messageTypes.ContainsKey(classType))
@@ -48,9 +39,7 @@ namespace LocalAuthority.Message
                         messageTypes.Add(classType, attribute.MsgType);
                     }
 
-                    Type messageType = GetValidParameterType(method);
-                    var types = new Type[] { messageType, classType };
-                    attribute.RegisterMessage(method, types);
+                    attribute.RegisterMessage(method, classType);
                 }
             }
         }
@@ -71,35 +60,6 @@ namespace LocalAuthority.Message
 
 
         // Validation ----------------------------------------------------------
-
-        /// <summary>
-        /// Check if the method has a valid signature:
-        ///     Zero or one parameters
-        ///     Parameter derives from <see cref="NetIdMessage"/>
-        /// </summary>
-        /// <returns>Empty string if valid signature, error message otherwise.</returns>
-        private static string HasValidSignature(MethodInfo method)
-        {
-            var parameters = method.GetParameters();
-
-            // Should only take 0 or 1 arguments.
-            if (parameters.Length > 1)
-            {
-                return "Cannot register method: " + method + ", because it has more than 1 parameter. It can only take zero or one parameters.";
-            }
-
-            // The first parameter must derive from NetIdMessage.
-            if (parameters.Length == 1)
-            {
-                var argType = parameters[0].ParameterType;
-                if (!Utility.IsSameOrSubclass(typeof(NetIdMessage), argType))
-                {
-                    return "Cannot register method: " + method + ", because its first argument does not derive from: " + typeof(NetIdMessage);
-                }
-            }
-
-            return "";
-        }
 
         /// <summary>
         /// Return the type of the first parameter of the method, or <see cref="NetIdMessage"/> if there are no parameters.

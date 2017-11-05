@@ -25,7 +25,7 @@ namespace LocalAuthority.Components
             MethodInfo method;
             if (Registration.RpcsWithPrediction.TryGetValue(msgType, out method))
             {
-                var args = typeof(TMsg) == typeof(NetIdMessage) ? null : new object[] { msg };
+                var args = typeof(TMsg) == typeof(NetIdMessage) ? null : msg.VarargsGetter();
                 method.Invoke(this, args);
             }
 

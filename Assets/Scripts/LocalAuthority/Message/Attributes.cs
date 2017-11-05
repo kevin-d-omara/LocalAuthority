@@ -25,16 +25,22 @@ namespace LocalAuthority.Message
         public short MsgType { get; set; }
 
         /// <summary>
+        /// Type of message used to send method parameters over the network.
+        /// </summary>
+        public Type TMsg { get; set; }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="method"></param>
         /// <param name="types"></param>
-        public void RegisterMessage(MethodInfo method, Type[] types)
+        public void RegisterMessage(MethodInfo method, Type classType)
         {
             // Same number, order, and type as parameters to RegisterMessage<TMsg, TComp>().
             var args = new object[] { method };
 
             // Call RegisterMessage<TMsg, TComp> with correct generic types.
+            var types = new Type[] { TMsg, classType };
             var registerMessage = RegisterMessageInfo.MakeGenericMethod(types);
             registerMessage.Invoke(this, args);
         }
@@ -114,9 +120,10 @@ namespace LocalAuthority.Message
     [AttributeUsage(AttributeTargets.Method)]
     public class MessageCommand : Message
     {
-        public MessageCommand(short msgType)
+        public MessageCommand(short msgType, Type tMsg)
         {
             MsgType = msgType;
+            TMsg = tMsg;
         }
 
         /// <summary>
@@ -137,7 +144,8 @@ namespace LocalAuthority.Message
                 }
                 else
                 {
-                    callback.Invoke(obj, new object[] { msg });
+                    var args = msg.VarargsGetter();
+                    callback.Invoke(obj, args);
                 }
             };
         }
@@ -156,9 +164,10 @@ namespace LocalAuthority.Message
         /// </summary>
         public bool Predicted { get; set; }
 
-        public MessageRpc(short msgType)
+        public MessageRpc(short msgType, Type tMsg)
         {
             MsgType = msgType;
+            TMsg = tMsg;
         }
 
         /// <summary>
@@ -180,7 +189,8 @@ namespace LocalAuthority.Message
                 }
                 else
                 {
-                    rpc = () => callback.Invoke(obj, new object[] { msg });
+                    var args = msg.VarargsGetter();
+                    rpc = () => callback.Invoke(obj, args);
                 }
 
                 obj.InvokeMessageRpc(rpc, netMsg, msg, Predicted);

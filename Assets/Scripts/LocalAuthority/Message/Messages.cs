@@ -49,8 +49,19 @@ namespace LocalAuthority.Message
         /// <summary>
         /// Set all class fields, except netId.
         /// </summary>
-        /// <param name="args">Arguments in the order of the full constructor, with netId omitted.</param>
+        /// <param name="args">An argument list for TMsg's full constructor, with netId omitted. This is an array of
+        /// objects with the same number, order, and type as the parameters of TMsg's full constructor, but with netId
+        /// omitted.</param>
         public virtual void VarargsSetter(params object[] args) { }
+
+        /// <summary>
+        /// Return all class fields, except netId. This is an array of objects with the same number, order, and type as
+        /// the parameters of the full constructor, but with netId omitted.
+        /// </summary>
+        public virtual object[] VarargsGetter()
+        {
+            return null;    // (?) null vs new object[0]
+        }
 
         public override void Deserialize(NetworkReader reader)
         {
@@ -74,6 +85,11 @@ namespace LocalAuthority.Message
         public FloatNetIdMessage(NetworkInstanceId id, float value) : base(id)
         {
             this.value = value;
+        }
+
+        public override object[] VarargsGetter()
+        {
+            return new object[] { value };
         }
 
         public override void VarargsSetter(params object[] args)
@@ -105,6 +121,11 @@ namespace LocalAuthority.Message
         public IntNetIdMessage(NetworkInstanceId id, int value) : base(id)
         {
             this.value = value;
+        }
+
+        public override object[] VarargsGetter()
+        {
+            return new object[] { value };
         }
 
         public override void VarargsSetter(params object[] args)
@@ -143,6 +164,11 @@ namespace LocalAuthority.Message
             value = (Vector2) args[0];
         }
 
+        public override object[] VarargsGetter()
+        {
+            return new object[] { value };
+        }
+
         public override void Deserialize(NetworkReader reader)
         {
             base.Deserialize(reader);
@@ -174,6 +200,11 @@ namespace LocalAuthority.Message
             value = (Vector3)args[0];
         }
 
+        public override object[] VarargsGetter()
+        {
+            return new object[] { value };
+        }
+
         public override void Deserialize(NetworkReader reader)
         {
             base.Deserialize(reader);
@@ -203,6 +234,11 @@ namespace LocalAuthority.Message
         public override void VarargsSetter(params object[] args)
         {
             netId2 = (NetworkInstanceId) args[0];
+        }
+
+        public override object[] VarargsGetter()
+        {
+            return new object[] { netId2 };
         }
 
         public override void Deserialize(NetworkReader reader)

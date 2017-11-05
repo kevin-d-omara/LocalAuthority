@@ -58,10 +58,10 @@ namespace LocalAuthority.Components
             SendCommand<Vector3NetIdMessage>((short) MsgType.UpdateTargetSyncPosition, transform.position);
         }
 
-        [MessageCommand((short)MsgType.UpdateTargetSyncPosition)]
-        private void CmdUpdateTargetSyncPosition(Vector3NetIdMessage msg)
+        [MessageCommand((short)MsgType.UpdateTargetSyncPosition, typeof(Vector3NetIdMessage))]
+        private void CmdUpdateTargetSyncPosition(Vector3 newTargetSyncPosition)
         {
-            targetSyncPosition = msg.value;
+            targetSyncPosition = newTargetSyncPosition;
         }
 
         public void HookTargetSyncPosition(Vector3 newSyncPosition)
