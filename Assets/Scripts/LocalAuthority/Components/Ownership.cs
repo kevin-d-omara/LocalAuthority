@@ -55,7 +55,7 @@ namespace LocalAuthority.Components
         /// </summary>
         public void RequestOwnership()
         {
-            SendCommand(nameof(CmdRequestOwnership), LocalPlayer.netId);
+            InvokeCommand(nameof(CmdRequestOwnership), LocalPlayer.netId);
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace LocalAuthority.Components
         /// </summary>
         public void ReleaseOwnership()
         {
-            SendCommand(nameof(CmdReleaseOwnership), LocalPlayer.netId);
+            InvokeCommand(nameof(CmdReleaseOwnership), LocalPlayer.netId);
         }
 
 

@@ -55,7 +55,7 @@ namespace LocalAuthority.Components
 
         private void BroadcastCurrentTransform()
         {
-            SendCommand(nameof(CmdUpdateTargetSyncPosition), transform.position);
+            InvokeCommand(nameof(CmdUpdateTargetSyncPosition), transform.position);
         }
 
         [MessageCommand((short)MsgType.UpdateTargetSyncPosition)]
