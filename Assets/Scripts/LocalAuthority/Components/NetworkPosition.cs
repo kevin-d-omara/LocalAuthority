@@ -55,10 +55,10 @@ namespace LocalAuthority.Components
 
         private void BroadcastCurrentTransform()
         {
-            SendCommand<Vector3NetIdMessage>((short) MsgType.UpdateTargetSyncPosition, transform.position);
+            SendCommand((short) MsgType.UpdateTargetSyncPosition, transform.position);
         }
 
-        [MessageCommand((short)MsgType.UpdateTargetSyncPosition, typeof(Vector3NetIdMessage))]
+        [MessageCommand((short)MsgType.UpdateTargetSyncPosition)]
         private void CmdUpdateTargetSyncPosition(Vector3 newTargetSyncPosition)
         {
             targetSyncPosition = newTargetSyncPosition;

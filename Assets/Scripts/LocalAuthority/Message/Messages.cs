@@ -1,32 +1,9 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Networking;
 
 namespace LocalAuthority.Message
 {
-    // Note: All messages have explicit Deserialize and Serialize methods, despite that Unity.Networking will
-    //       code-generate these for you. I found that even simple classes like IntNetIdMessage were not being
-    //       code-generated correctly, and the value would always be zero.
-
-
-    public static class MessageFactory
-    {
-        /// <summary>
-        /// Return a new instance of TMsg with all of its fields initialized.
-        /// </summary>
-        /// <typeparam name="TMsg">Type of message to create.</typeparam>
-        /// <param name="args">An argument list for TMsg's full constructor, with netId omitted. This is an array of
-        /// objects with the same number, order, and type as the parameters of TMsg's full constructor, but with netId
-        /// omitted.</param>
-        /// <returns>New TMsg instance with all fields initialized.</returns>
-        public static TMsg New<TMsg>(NetworkInstanceId netId, params object[] args) where TMsg : NetIdMessage, new()
-        {
-            var msg = new TMsg();
-            msg.netId = netId;
-            msg.VarargsSetter(args);
-            return msg;
-        }
-    }
-
     /// <summary>
     /// Message base class for using Message-invoked Commands.
     /// </summary>
@@ -74,183 +51,79 @@ namespace LocalAuthority.Message
         }
     }
 
-    public class FloatNetIdMessage : NetIdMessage
+    /// <summary>
+    /// Message that can hold any type readable and writeable by <see cref="NetworkReader"/> and <see cref="NetworkWriter"/>.
+    /// </summary>
+    public class VarArgsNetIdMessasge : NetIdMessage
     {
-        public float value;
+        /// <summary>
+        /// An argument list for a callback method. This is an array of objects with the same number, order, and type as
+        /// the parameters of the method. It will be null if the method has no parameters.
+        /// </summary>
+        public object[] args;
 
-        public FloatNetIdMessage()
+        /// <summary>
+        /// Message id for the callback method. This MUST be set in order to call <see cref="Deserialize"/>.
+        /// </summary>
+        public short msgType = -1;
+
+        public VarArgsNetIdMessasge()
         {
         }
 
-        public FloatNetIdMessage(NetworkInstanceId id, float value) : base(id)
+        public VarArgsNetIdMessasge(NetworkInstanceId id, params object[] values) : base(id)
         {
-            this.value = value;
+            args = values;
         }
 
         public override object[] VarargsGetter()
         {
-            return new object[] { value };
+            return args;
         }
 
-        public override void VarargsSetter(params object[] args)
+        public override void VarargsSetter(params object[] values)
         {
-            value = (float) args[0];
+            args = values;
         }
 
         public override void Deserialize(NetworkReader reader)
         {
             base.Deserialize(reader);
-            value = reader.ReadSingle();
+
+            if (msgType == -1)
+            {
+                if (LogFilter.logFatal) { Debug.LogError("Cannot deserialize message: the field " + nameof(msgType) + "hasn't been set."); }
+                return;
+            }
+
+            Type[] types;
+            if (Registration.ParameterTypes.TryGetValue(msgType, out types))
+            {
+                if (types == null) return;
+
+                var length = types.Length;
+                args = new object[length];
+
+                for (int i = 0; i < length; ++i)
+                {
+                    args[i] = reader.Read(types[i]);
+                }
+            }
+            else
+            {
+                if (LogFilter.logFatal) { Debug.LogError("Cannot deserialize message: message id " + msgType + " not found "); }
+            }
         }
 
         public override void Serialize(NetworkWriter writer)
         {
             base.Serialize(writer);
-            writer.Write(value);
-        }
-    }
 
-    public class IntNetIdMessage : NetIdMessage
-    {
-        public int value;
-
-        public IntNetIdMessage()
-        {
-        }
-
-        public IntNetIdMessage(NetworkInstanceId id, int value) : base(id)
-        {
-            this.value = value;
-        }
-
-        public override object[] VarargsGetter()
-        {
-            return new object[] { value };
-        }
-
-        public override void VarargsSetter(params object[] args)
-        {
-            value = (int) args[0];
-        }
-
-        public override void Deserialize(NetworkReader reader)
-        {
-            base.Deserialize(reader);
-            value = (int)reader.ReadPackedUInt32();
-        }
-
-        public override void Serialize(NetworkWriter writer)
-        {
-            base.Serialize(writer);
-            writer.WritePackedUInt32((uint)value);
-        }
-    }
-
-    public class Vector2NetIdMessage : NetIdMessage
-    {
-        public Vector2 value;
-
-        public Vector2NetIdMessage()
-        {
-        }
-
-        public Vector2NetIdMessage(NetworkInstanceId id, Vector2 value) : base(id)
-        {
-            this.value = value;
-        }
-
-        public override void VarargsSetter(params object[] args)
-        {
-            value = (Vector2) args[0];
-        }
-
-        public override object[] VarargsGetter()
-        {
-            return new object[] { value };
-        }
-
-        public override void Deserialize(NetworkReader reader)
-        {
-            base.Deserialize(reader);
-            value = reader.ReadVector2();
-        }
-
-        public override void Serialize(NetworkWriter writer)
-        {
-            base.Serialize(writer);
-            writer.Write(value);
-        }
-    }
-
-    public class Vector3NetIdMessage : NetIdMessage
-    {
-        public Vector3 value;
-
-        public Vector3NetIdMessage()
-        {
-        }
-
-        public Vector3NetIdMessage(NetworkInstanceId id, Vector3 value) : base(id)
-        {
-            this.value = value;
-        }
-
-        public override void VarargsSetter(params object[] args)
-        {
-            value = (Vector3)args[0];
-        }
-
-        public override object[] VarargsGetter()
-        {
-            return new object[] { value };
-        }
-
-        public override void Deserialize(NetworkReader reader)
-        {
-            base.Deserialize(reader);
-            value = reader.ReadVector3();
-        }
-
-        public override void Serialize(NetworkWriter writer)
-        {
-            base.Serialize(writer);
-            writer.Write(value);
-        }
-    }
-
-    public class TwoNetIdMessage : NetIdMessage
-    {
-        public NetworkInstanceId netId2;
-
-        public TwoNetIdMessage()
-        {
-        }
-
-        public TwoNetIdMessage(NetworkInstanceId id, NetworkInstanceId id2) : base(id)
-        {
-            netId2 = id2;
-        }
-
-        public override void VarargsSetter(params object[] args)
-        {
-            netId2 = (NetworkInstanceId) args[0];
-        }
-
-        public override object[] VarargsGetter()
-        {
-            return new object[] { netId2 };
-        }
-
-        public override void Deserialize(NetworkReader reader)
-        {
-            base.Deserialize(reader);
-            netId2 = reader.ReadNetworkId();
-        }
-
-        public override void Serialize(NetworkWriter writer)
-        {
-            base.Serialize(writer);
-            writer.Write(netId2);
+            if (args == null) return;
+            for (int i = 0; i < args.Length; ++i)
+            {
+                writer.Write(args[i]);
+            }
         }
     }
 }

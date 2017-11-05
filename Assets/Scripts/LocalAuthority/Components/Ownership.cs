@@ -55,7 +55,7 @@ namespace LocalAuthority.Components
         /// </summary>
         public void RequestOwnership()
         {
-            SendCommand<TwoNetIdMessage>((short) MsgType.RequestOwnership, LocalPlayer.netId);
+            SendCommand((short) MsgType.RequestOwnership, LocalPlayer.netId);
 
             // Give immediate control (client-side prediction).
             if (IsOwnedByNone)
@@ -69,7 +69,7 @@ namespace LocalAuthority.Components
         /// </summary>
         public void ReleaseOwnership()
         {
-            SendCommand<TwoNetIdMessage>((short)MsgType.ReleaseOwnership, LocalPlayer.netId);
+            SendCommand((short)MsgType.ReleaseOwnership, LocalPlayer.netId);
 
             // Immediately release control (client-side prediction).
             if (IsOwnedByLocal)
@@ -81,7 +81,7 @@ namespace LocalAuthority.Components
 
         // Message Commands ----------------------------------------------------
 
-        [MessageCommand((short)MsgType.RequestOwnership, typeof(TwoNetIdMessage))]
+        [MessageCommand((short)MsgType.RequestOwnership)]
         private void CmdRequestOwnership(NetworkInstanceId netId2)
         {
             var requester = Utility.FindLocalComponent<NetworkIdentity>(netId2);
@@ -93,7 +93,7 @@ namespace LocalAuthority.Components
             }
         }
 
-        [MessageCommand((short)MsgType.ReleaseOwnership, typeof(TwoNetIdMessage))]
+        [MessageCommand((short)MsgType.ReleaseOwnership)]
         private void CmdReleaseOwnership(NetworkInstanceId netId2)
         {
             var requester = Utility.FindLocalComponent<NetworkIdentity>(netId2);

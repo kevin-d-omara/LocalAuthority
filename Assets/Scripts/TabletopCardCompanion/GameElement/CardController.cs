@@ -13,7 +13,7 @@ namespace TabletopCardCompanion.GameElement
         {
             if (Input.GetButtonDown(AxisName.ToggleColor))
             {
-                SendCommand<NetIdMessage>((short)MsgType.ToggleColor);
+                SendCommand((short)MsgType.ToggleColor);
             }
 
             if (Input.GetButtonDown(AxisName.Rotate))
@@ -21,7 +21,7 @@ namespace TabletopCardCompanion.GameElement
                 var direction = Input.GetAxis("Rotate") > 0 ? 1 : -1;
                 var degrees = 60 * direction;
 
-                SendCommand<IntNetIdMessage>((short)MsgType.Rotate, degrees);
+                SendCommand((short)MsgType.Rotate, degrees);
             }
 
             if (Input.GetButtonDown(AxisName.Scale))
@@ -29,7 +29,7 @@ namespace TabletopCardCompanion.GameElement
                 var direction = Input.GetAxis("Scale") > 0 ? 1 : -1;
                 var percent = 0.1f * direction;
 
-                SendCommand<FloatNetIdMessage>((short)MsgType.Scale, percent);
+                SendCommand((short)MsgType.Scale, percent);
             }
         }
 
@@ -67,19 +67,19 @@ namespace TabletopCardCompanion.GameElement
 
         // Commands ------------------------------------------------------------
 
-        [MessageRpc((short)MsgType.ToggleColor, typeof(NetIdMessage), Predicted = true)]
+        [MessageRpc((short)MsgType.ToggleColor, Predicted = true)]
         private void RpcToggleColor()
         {
             model.HookIsToggled(!model.IsToggled);
         }
 
-        [MessageRpc((short)MsgType.Rotate, typeof(IntNetIdMessage), Predicted = true)]
+        [MessageRpc((short)MsgType.Rotate, Predicted = true)]
         private void RpcRotate(int degrees)
         {
             model.HookRotation(degrees);
         }
 
-        [MessageRpc((short)MsgType.Scale, typeof(FloatNetIdMessage), Predicted = true)]
+        [MessageRpc((short)MsgType.Scale, Predicted = true)]
         private void RpcScale(float percent)
         {
             var newScale = model.LocalScale * (1f + percent);

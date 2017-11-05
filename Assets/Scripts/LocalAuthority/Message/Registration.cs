@@ -39,6 +39,22 @@ namespace LocalAuthority.Message
                         messageTypes.Add(classType, attribute.MsgType);
                     }
 
+                    // Store Type list for the method parameters.
+                    var parameters = method.GetParameters();
+                    if (parameters.Length > 0)
+                    {
+                        var types = new Type[parameters.Length];
+                        for (int i = 0; i < parameters.Length; ++i)
+                        {
+                            types[i] = parameters[i].ParameterType;
+                        }
+                        ParameterTypes.Add(attribute.MsgType, types);
+                    }
+                    else
+                    {
+                        ParameterTypes.Add(attribute.MsgType, null);
+                    }
+
                     attribute.RegisterMessage(method, classType);
                 }
             }
@@ -82,6 +98,11 @@ namespace LocalAuthority.Message
         /// Mapping from method name to message id.
         /// </summary>
         internal static readonly Dictionary<string, short> MsgTypes = new Dictionary<string, short>();
+
+        /// <summary>
+        /// Mapping from message id to Type of each parameter to the method callback.
+        /// </summary>
+        internal static readonly Dictionary<short, Type[]> ParameterTypes = new Dictionary<short, Type[]>();
 
         /// <summary>
         /// Mapping from message id to method info for methods with client-side prediction enabled.

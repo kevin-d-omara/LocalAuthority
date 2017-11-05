@@ -17,15 +17,16 @@ namespace LocalAuthority.Components
         /// </summary>
         /// <param name="values">Values to load the message with, besides netId.</param>
         /// <returns>True if the command was sent.</returns>
-        protected bool SendCommand<TMsg>(short msgType, params object[] values) where TMsg : NetIdMessage, new()
+        // TODO: rename InvokeCommand() & InvokeRpc() or one good combined name.
+        protected bool SendCommand(short msgType, params object[] values)
         {
-            var msg = MessageFactory.New<TMsg>(netId, values);
+            var msg = new VarArgsNetIdMessasge(netId, values);
 
 //            Registration.InvokePrediction(msgType, values);
             MethodInfo method;
             if (Registration.RpcsWithPrediction.TryGetValue(msgType, out method))
             {
-                var args = typeof(TMsg) == typeof(NetIdMessage) ? null : msg.VarargsGetter();
+                var args = msg.VarargsGetter();
                 method.Invoke(this, args);
             }
 

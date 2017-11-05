@@ -10,7 +10,7 @@ namespace LocalAuthority.Message
     /// to be invoked on the server or clients by sending a message from a client.
     /// <para>
     /// [Message] functions may be invoked from any LocalAuthorityBehaviour, even those not attached to the
-    /// player GameObject. Invoke a [Message] by using <see cref="LocalAuthorityBehaviour.SendCommand{TMsg}"/>.
+    /// player GameObject. Invoke a [Message] by using <see cref="LocalAuthorityBehaviour.SendCommand"/>.
     /// </para>
     /// <para>
     /// These functions must accept zero or one parameters. That parameter must be derived from <see cref="NetIdMessage"/>.
@@ -24,24 +24,15 @@ namespace LocalAuthority.Message
         /// </summary>
         public short MsgType { get; set; }
 
-        /// <summary>
-        /// Type of message used to send method parameters over the network.
-        /// </summary>
-        public Type TMsg { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="method"></param>
-        /// <param name="types"></param>
+        // TODO: documentation
         public void RegisterMessage(MethodInfo method, Type classType)
         {
             // Same number, order, and type as parameters to RegisterMessage<TMsg, TComp>().
             var args = new object[] { method };
 
-            // Call RegisterMessage<TMsg, TComp> with correct generic types.
-            var types = new Type[] { TMsg, classType };
-            var registerMessage = RegisterMessageInfo.MakeGenericMethod(types);
+            // Call RegisterMessage<TComp> with correct generic type.
+            var registerMessage = RegisterMessageInfo.MakeGenericMethod(classType);
             registerMessage.Invoke(this, args);
         }
 
@@ -52,13 +43,11 @@ namespace LocalAuthority.Message
         /// Registering on the client enables the method to be called on all clients, like a [ClientRpc].
         /// </para>
         /// </summary>
-        /// <typeparam name="TMsg">Type of network message that the method takes as its only parameter.</typeparam>
         /// <typeparam name="TComp">Type of component where the method code is written.</typeparam>
         /// <param name="method">The function to register.</param>
-        public virtual void RegisterMessage<TMsg, TComp>(MethodInfo method) where TMsg : NetIdMessage, new()
-                                                                            where TComp : LocalAuthorityBehaviour
+        public virtual void RegisterMessage<TComp>(MethodInfo method) where TComp : LocalAuthorityBehaviour
         {
-            var callback = GetCallback<TMsg, TComp>(method);
+            var callback = GetCallback<TComp>(method);
             RegisterWithServer(callback);
             RegisterWithClient(callback);
         }
@@ -67,8 +56,7 @@ namespace LocalAuthority.Message
         /// <summary>
         /// Return a callback that behaves like a <see cref="CommandAttribute"/> or <see cref="ClientRpcAttribute"/>.
         /// </summary>
-        protected abstract NetworkMessageDelegate GetCallback<TMsg, TComp>(MethodInfo callback)
-            where TMsg : NetIdMessage, new()
+        protected abstract NetworkMessageDelegate GetCallback<TComp>(MethodInfo callback)
             where TComp : LocalAuthorityBehaviour;
 
         /// <summary>
@@ -120,33 +108,27 @@ namespace LocalAuthority.Message
     [AttributeUsage(AttributeTargets.Method)]
     public class MessageCommand : Message
     {
-        public MessageCommand(short msgType, Type tMsg)
+        public MessageCommand(short msgType)
         {
             MsgType = msgType;
-            TMsg = tMsg;
         }
 
         /// <summary>
         /// Return a callback that behaves like a [Command].
-        /// When invoked with <see cref="LocalAuthorityBehaviour.SendCommand{TMsg}"/>, it will run only on the server.
+        /// When invoked with <see cref="LocalAuthorityBehaviour.SendCommand"/>, it will run only on the server.
         /// </summary>
-        protected override NetworkMessageDelegate GetCallback<TMsg, TComp>(MethodInfo callback)
+        protected override NetworkMessageDelegate GetCallback<TComp>(MethodInfo callback)
         {
             return netMsg =>
             {
-                var msg = netMsg.ReadMessage<TMsg>();
+                var msg = new VarArgsNetIdMessasge();
+                msg.msgType = netMsg.msgType;
+                msg.Deserialize(netMsg.reader);
+
                 var obj = Utility.FindLocalComponent<TComp>(msg.netId);
 
-                if (typeof(TMsg) == typeof(NetIdMessage))
-                {
-                    // The method takes no arguments. NetIdMessage was only used for locating the object.
-                    callback.Invoke(obj, null);
-                }
-                else
-                {
-                    var args = msg.VarargsGetter();
-                    callback.Invoke(obj, args);
-                }
+                var args = msg.VarargsGetter();
+                callback.Invoke(obj, args);
             };
         }
     }
@@ -164,42 +146,34 @@ namespace LocalAuthority.Message
         /// </summary>
         public bool Predicted { get; set; }
 
-        public MessageRpc(short msgType, Type tMsg)
+        public MessageRpc(short msgType)
         {
             MsgType = msgType;
-            TMsg = tMsg;
         }
 
         /// <summary>
         /// Return a callback that behaves like a [ClientRpc].
-        /// When invoked with <see cref="LocalAuthorityBehaviour.SendCommand{TMsg}"/>, it will run on all clients.
+        /// When invoked with <see cref="LocalAuthorityBehaviour.SendCommand"/>, it will run on all clients.
         /// </summary>
-        protected override NetworkMessageDelegate GetCallback<TMsg, TComp>(MethodInfo callback)
+        protected override NetworkMessageDelegate GetCallback<TComp>(MethodInfo callback)
         {
             return netMsg =>
             {
-                var msg = netMsg.ReadMessage<TMsg>();
+                var msg = new VarArgsNetIdMessasge();
+                msg.msgType = netMsg.msgType;
+                msg.Deserialize(netMsg.reader);
+
                 var obj = Utility.FindLocalComponent<TComp>(msg.netId);
 
-                Action rpc;
-                if (typeof(TMsg) == typeof(NetIdMessage))
-                {
-                    // The method takes no arguments. NetIdMessage was only used for locating the object.
-                    rpc = () => callback.Invoke(obj, null);
-                }
-                else
-                {
-                    var args = msg.VarargsGetter();
-                    rpc = () => callback.Invoke(obj, args);
-                }
-
+                var args = msg.VarargsGetter();
+                Action rpc = () => callback.Invoke(obj, args);
                 obj.InvokeMessageRpc(rpc, netMsg, msg, Predicted);
             };
         }
 
-        public override void RegisterMessage<TMsg, TComp>(MethodInfo method)
+        public override void RegisterMessage<TComp>(MethodInfo method)
         {
-            base.RegisterMessage<TMsg, TComp>(method);
+            base.RegisterMessage<TComp>(method);
 
             if (Predicted)
             {
