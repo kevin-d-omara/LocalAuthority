@@ -22,7 +22,7 @@ Unity built-in networking has a number of drawbacks and limitations:
 ## Examples
 
 ```csharp
-public CardController : NetworkBehaviour
+public class CardController : LocalAuthorityBehaviour
 {
     public Sprite frontImage;
     public Sprite backImage;
@@ -36,7 +36,7 @@ public CardController : NetworkBehaviour
         }
     }
 
-    [MessageRpc((short)MsgType.FlipOver, Predicted = true)]
+    [MessageRpc((short)MsgType.FlipOver, ClientSidePrediction = true)]
     public void FlipOver()
     {
         currentImage = currentImage == frontImage ? backImage : frontImage;
