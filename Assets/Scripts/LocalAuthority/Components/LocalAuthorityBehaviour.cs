@@ -26,8 +26,7 @@ namespace LocalAuthority.Components
             MethodInfo method;
             if (Registration.RpcsWithPrediction.TryGetValue(msgType, out method))
             {
-                var args = msg.VarargsGetter();
-                method.Invoke(this, args);
+                method.Invoke(this, msg.args);
             }
 
             return NetworkManager.singleton.client.Send(msgType, msg);

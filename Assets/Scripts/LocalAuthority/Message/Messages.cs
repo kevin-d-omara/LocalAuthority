@@ -5,57 +5,15 @@ using UnityEngine.Networking;
 namespace LocalAuthority.Message
 {
     /// <summary>
-    /// Message base class for using Message-invoked Commands.
+    /// Message that can hold any type readable and writeable by <see cref="NetworkReader"/> and <see cref="NetworkWriter"/>.
     /// </summary>
-    public class NetIdMessage : MessageBase
+    public class VarArgsNetIdMessasge : MessageBase
     {
         /// <summary>
         /// The NetworkInstanceId of the object that sent this message. Used to find the object within the scene.
         /// </summary>
         public NetworkInstanceId netId;
 
-        public NetIdMessage()
-        {
-        }
-
-        public NetIdMessage(NetworkInstanceId id)
-        {
-            netId = id;
-        }
-
-        /// <summary>
-        /// Set all class fields, except netId.
-        /// </summary>
-        /// <param name="args">An argument list for TMsg's full constructor, with netId omitted. This is an array of
-        /// objects with the same number, order, and type as the parameters of TMsg's full constructor, but with netId
-        /// omitted.</param>
-        public virtual void VarargsSetter(params object[] args) { }
-
-        /// <summary>
-        /// Return all class fields, except netId. This is an array of objects with the same number, order, and type as
-        /// the parameters of the full constructor, but with netId omitted.
-        /// </summary>
-        public virtual object[] VarargsGetter()
-        {
-            return null;    // (?) null vs new object[0]
-        }
-
-        public override void Deserialize(NetworkReader reader)
-        {
-            netId = reader.ReadNetworkId();
-        }
-
-        public override void Serialize(NetworkWriter writer)
-        {
-            writer.Write(netId);
-        }
-    }
-
-    /// <summary>
-    /// Message that can hold any type readable and writeable by <see cref="NetworkReader"/> and <see cref="NetworkWriter"/>.
-    /// </summary>
-    public class VarArgsNetIdMessasge : NetIdMessage
-    {
         /// <summary>
         /// An argument list for a callback method. This is an array of objects with the same number, order, and type as
         /// the parameters of the method. It will be null if the method has no parameters.
@@ -63,7 +21,7 @@ namespace LocalAuthority.Message
         public object[] args;
 
         /// <summary>
-        /// Message id for the callback method. This MUST be set in order to call <see cref="Deserialize"/>.
+        /// Message id for the callback method; MUST set before calling <see cref="Deserialize"/>.
         /// </summary>
         public short msgType = -1;
 
@@ -71,24 +29,17 @@ namespace LocalAuthority.Message
         {
         }
 
-        public VarArgsNetIdMessasge(NetworkInstanceId id, params object[] values) : base(id)
+        public VarArgsNetIdMessasge(NetworkInstanceId id, params object[] values)
         {
-            args = values;
-        }
-
-        public override object[] VarargsGetter()
-        {
-            return args;
-        }
-
-        public override void VarargsSetter(params object[] values)
-        {
+            netId = id;
             args = values;
         }
 
         public override void Deserialize(NetworkReader reader)
         {
             base.Deserialize(reader);
+
+            netId = reader.ReadNetworkId();
 
             if (msgType == -1)
             {
@@ -118,6 +69,8 @@ namespace LocalAuthority.Message
         public override void Serialize(NetworkWriter writer)
         {
             base.Serialize(writer);
+
+            writer.Write(netId);
 
             if (args == null) return;
             for (int i = 0; i < args.Length; ++i)

@@ -75,18 +75,6 @@ namespace LocalAuthority.Message
         }
 
 
-        // Validation ----------------------------------------------------------
-
-        /// <summary>
-        /// Return the type of the first parameter of the method, or <see cref="NetIdMessage"/> if there are no parameters.
-        /// </summary>
-        private static Type GetValidParameterType(MethodInfo method)
-        {
-            var parameters = method.GetParameters();
-
-            return parameters.Length == 0 ? typeof(NetIdMessage) : parameters[0].ParameterType;
-        }
-
         // Data ----------------------------------------------------------------
 
         /// <summary>

@@ -12,9 +12,6 @@ namespace LocalAuthority.Message
     /// [Message] functions may be invoked from any LocalAuthorityBehaviour, even those not attached to the
     /// player GameObject. Invoke a [Message] by using <see cref="LocalAuthorityBehaviour.SendCommand"/>.
     /// </para>
-    /// <para>
-    /// These functions must accept zero or one parameters. That parameter must be derived from <see cref="NetIdMessage"/>.
-    /// </para>
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public abstract class Message : Attribute
@@ -127,8 +124,7 @@ namespace LocalAuthority.Message
 
                 var obj = Utility.FindLocalComponent<TComp>(msg.netId);
 
-                var args = msg.VarargsGetter();
-                callback.Invoke(obj, args);
+                callback.Invoke(obj, msg.args);
             };
         }
     }
@@ -165,8 +161,7 @@ namespace LocalAuthority.Message
 
                 var obj = Utility.FindLocalComponent<TComp>(msg.netId);
 
-                var args = msg.VarargsGetter();
-                Action rpc = () => callback.Invoke(obj, args);
+                Action rpc = () => callback.Invoke(obj, msg.args);
                 obj.InvokeMessageRpc(rpc, netMsg, msg, Predicted);
             };
         }
