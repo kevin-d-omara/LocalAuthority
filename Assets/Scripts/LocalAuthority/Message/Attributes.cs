@@ -76,6 +76,9 @@ namespace LocalAuthority.Message
 
         /// <summary>
         /// Return true if the specified message id has already been registered to a callback on the server or client.
+        /// <remarks>
+        /// Each time a player leaves a networked match, their NetworkServer and NetworKClient handlers get erased.
+        /// </remarks>
         /// </summary>
         public static bool HasBeenRegistered(short msgType)
         {

@@ -42,5 +42,13 @@ namespace LocalAuthority
         {
             return potentialDescendant.IsSubclassOf(potentialBase) || potentialDescendant == potentialBase;
         }
+
+        /// <summary>
+        /// Return the concatenation of "namespace" + "class" + "method".
+        /// </summary>
+        public static string GetFullyQualifiedMethodName(Type classType, string methodName)
+        {
+            return classType.FullName + "." + methodName;
+        }
     }
 }

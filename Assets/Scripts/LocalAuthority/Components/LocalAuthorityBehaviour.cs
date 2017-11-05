@@ -44,7 +44,8 @@ namespace LocalAuthority.Components
         /// </summary>
         private bool InvokeCommandOrRpc(string methodName, params object[] values)
         {
-            var msgType = Registration.MsgTypes[methodName]; // TODO: Same method name, different class?
+            var qualifiedName = Utility.GetFullyQualifiedMethodName(GetType(), methodName);
+            var msgType = Registration.MsgTypes[qualifiedName];
             var msg = new VarArgsNetIdMessasge(netId, values);
 
             // Execute immediately if client-side prediction is enabled.

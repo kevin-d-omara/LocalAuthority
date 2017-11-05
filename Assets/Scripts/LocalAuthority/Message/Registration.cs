@@ -7,7 +7,6 @@ namespace LocalAuthority.Message
     /// <summary>
     /// Static class for registering message commands.
     /// </summary>
-    // TODO: Lots and lots of error reporting for when people use incompatible method signatures (i.e. float vs FloatNetIdMessage, etc).
     public static class Registration
     {
         /// <summary>
@@ -15,14 +14,7 @@ namespace LocalAuthority.Message
         /// </summary>
         public static void RegisterCommands(Type classType)
         {
-            // Registration ----------------------------------------------------
-
-            // If the class has already registered with the server, exit early to avoid expensive reflection operations.
-            short msgType;
-            if (messageTypes.TryGetValue(classType, out msgType))
-            {
-                if (Message.HasBeenRegistered(msgType)) return;
-            }
+            if (AlreadyRegistered(classType)) return;
 
             // TODO: What about inheritence? I.e. DoubleSidedCardController : CardController?
             var methods = classType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
@@ -32,38 +24,9 @@ namespace LocalAuthority.Message
                 var attribute = method.GetCustomAttribute<Message>(true);
                 if (attribute != null)
                 {
-                    // Store only the first method's message type, because we only need a single value
-                    // per class to check Message.HasBeenRegistered().
-                    if (!messageTypes.ContainsKey(classType))
-                    {
-                        messageTypes.Add(classType, attribute.MsgType);
-                    }
-
-                    // Store map from method name to message id.
-                    var methodName = method.Name;
-                    if (!MsgTypes.ContainsKey(methodName))
-                    {
-                        MsgTypes.Add(methodName, attribute.MsgType); // TODO: Same method name, different class?
-                    }
-
-                    // Store Type list for the method parameters.
-                    if (!ParameterTypes.ContainsKey(attribute.MsgType))
-                    {
-                        var parameters = method.GetParameters();
-                        if (parameters.Length > 0)
-                        {
-                            var types = new Type[parameters.Length];
-                            for (int i = 0; i < parameters.Length; ++i)
-                            {
-                                types[i] = parameters[i].ParameterType;
-                            }
-                            ParameterTypes.Add(attribute.MsgType, types);
-                        }
-                        else
-                        {
-                            ParameterTypes.Add(attribute.MsgType, null);
-                        }
-                    }
+                    CacheRegisteredClass(classType, attribute);
+                    CacheMessageType(method, classType, attribute);
+                    CacheParameterTypeList(method, attribute);
 
                     attribute.RegisterMessage(method, classType);
                 }
@@ -72,6 +35,67 @@ namespace LocalAuthority.Message
 
 
         #region Private
+
+        /// <summary>
+        /// True if the class has already been registered on the server and clients.
+        /// </summary>
+        private static bool AlreadyRegistered(Type classType)
+        {
+            short msgType;
+            if (RegisteredClasses.TryGetValue(classType, out msgType))
+            {
+                if (Message.HasBeenRegistered(msgType)) return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Record that this class has been registered.
+        /// </summary>
+        private static void CacheRegisteredClass(Type classType, Message attribute)
+        {
+            // Store the first method. We only need one value per class to check Message.HasBeenRegistered().
+            if (!RegisteredClasses.ContainsKey(classType))
+            {
+                RegisteredClasses.Add(classType, attribute.MsgType);
+            }
+        }
+
+        /// <summary>
+        /// Record mapping from method name to message id.
+        /// </summary>
+        private static void CacheMessageType(MethodInfo method, Type classType, Message attribute)
+        {
+            var methodName = Utility.GetFullyQualifiedMethodName(classType, method.Name);
+            if (!MsgTypes.ContainsKey(methodName))
+            {
+                MsgTypes.Add(methodName, attribute.MsgType);
+            }
+        }
+
+        /// <summary>
+        /// Record a list of Types for this method's parameters.
+        /// </summary>
+        private static void CacheParameterTypeList(MethodInfo method, Message attribute)
+        {
+            if (!ParameterTypes.ContainsKey(attribute.MsgType))
+            {
+                var parameters = method.GetParameters();
+                if (parameters.Length > 0)
+                {
+                    var types = new Type[parameters.Length];
+                    for (int i = 0; i < parameters.Length; ++i)
+                    {
+                        types[i] = parameters[i].ParameterType;
+                    }
+                    ParameterTypes.Add(attribute.MsgType, types);
+                }
+                else
+                {
+                    ParameterTypes.Add(attribute.MsgType, null);
+                }
+            }
+        }
 
         /// <summary>
         /// Store methods which have client-side prediction enabled.
@@ -85,12 +109,13 @@ namespace LocalAuthority.Message
         }
 
 
-        // Data ----------------------------------------------------------------
+        // Data Cache ----------------------------------------------------------
 
         /// <summary>
-        /// A cache with one message id per class. Used to prevent uneccessary and expensive registrations.
+        /// Mapping from registered class to message id of its first method.
+        /// Only one message id is needed per class to check <see cref="Message.HasBeenRegistered"/>
         /// </summary>
-        private static readonly Dictionary<Type, short> messageTypes = new Dictionary<Type, short>();
+        private static readonly Dictionary<Type, short> RegisteredClasses = new Dictionary<Type, short>();
 
         /// <summary>
         /// Mapping from method name to message id.
@@ -98,7 +123,7 @@ namespace LocalAuthority.Message
         internal static readonly Dictionary<string, short> MsgTypes = new Dictionary<string, short>();
 
         /// <summary>
-        /// Mapping from message id to Type of each parameter to the method callback.
+        /// Mapping from message id to a list of Types for the callback's parameters.
         /// </summary>
         internal static readonly Dictionary<short, Type[]> ParameterTypes = new Dictionary<short, Type[]>();
 
