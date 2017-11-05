@@ -27,7 +27,7 @@ namespace LocalAuthority.Components
 
             // Execute immediately if client-side prediction is enabled.
             MethodInfo method;
-            if (Registration.RpcsWithPrediction.TryGetValue(msgType, out method))
+            if (Registration.ClientSidePrediction.TryGetValue(msgType, out method))
             {
                 method.Invoke(this, msg.args);
             }

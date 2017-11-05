@@ -67,19 +67,19 @@ namespace TabletopCardCompanion.GameElement
 
         // Commands ------------------------------------------------------------
 
-        [MessageRpc((short)MsgType.ToggleColor, Predicted = true)]
+        [MessageRpc((short)MsgType.ToggleColor, ClientSidePrediction = true)]
         private void RpcToggleColor()
         {
             model.HookIsToggled(!model.IsToggled);
         }
 
-        [MessageRpc((short)MsgType.Rotate, Predicted = true)]
+        [MessageRpc((short)MsgType.Rotate, ClientSidePrediction = true)]
         private void RpcRotate(int degrees)
         {
             model.HookRotation(degrees);
         }
 
-        [MessageRpc((short)MsgType.Scale, Predicted = true)]
+        [MessageRpc((short)MsgType.Scale, ClientSidePrediction = true)]
         private void RpcScale(float percent)
         {
             var newScale = model.LocalScale * (1f + percent);

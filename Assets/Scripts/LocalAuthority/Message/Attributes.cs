@@ -140,7 +140,7 @@ namespace LocalAuthority.Message
         /// <summary>
         /// True if the Rpc should be run immediately on the caller for client-side prediction.
         /// </summary>
-        public bool Predicted { get; set; }
+        public bool ClientSidePrediction { get; set; }
 
         public MessageRpc(short msgType)
         {
@@ -162,7 +162,7 @@ namespace LocalAuthority.Message
                 var obj = Utility.FindLocalComponent<TComp>(msg.netId);
 
                 Action rpc = () => callback.Invoke(obj, msg.args);
-                obj.InvokeMessageRpc(rpc, netMsg, msg, Predicted);
+                obj.InvokeMessageRpc(rpc, netMsg, msg, ClientSidePrediction);
             };
         }
 
@@ -170,7 +170,7 @@ namespace LocalAuthority.Message
         {
             base.RegisterMessage<TComp>(method);
 
-            if (Predicted)
+            if (ClientSidePrediction)
             {
                 Registration.RegisterPredictedRpc(MsgType, method);
             }

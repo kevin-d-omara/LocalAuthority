@@ -78,9 +78,9 @@ namespace LocalAuthority.Message
         /// </summary>
         internal static void RegisterPredictedRpc(short msgType, MethodInfo method)
         {
-            if (!RpcsWithPrediction.ContainsKey(msgType))
+            if (!ClientSidePrediction.ContainsKey(msgType))
             {
-                RpcsWithPrediction.Add(msgType, method);
+                ClientSidePrediction.Add(msgType, method);
             }
         }
 
@@ -105,7 +105,7 @@ namespace LocalAuthority.Message
         /// <summary>
         /// Mapping from message id to method info for methods with client-side prediction enabled.
         /// </summary>
-        internal static readonly Dictionary<short, MethodInfo> RpcsWithPrediction = new Dictionary<short, MethodInfo>();
+        internal static readonly Dictionary<short, MethodInfo> ClientSidePrediction = new Dictionary<short, MethodInfo>();
 
         #endregion
     }
