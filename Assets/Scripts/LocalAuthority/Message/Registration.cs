@@ -40,19 +40,22 @@ namespace LocalAuthority.Message
                     }
 
                     // Store Type list for the method parameters.
-                    var parameters = method.GetParameters();
-                    if (parameters.Length > 0)
+                    if (!ParameterTypes.ContainsKey(attribute.MsgType))
                     {
-                        var types = new Type[parameters.Length];
-                        for (int i = 0; i < parameters.Length; ++i)
+                        var parameters = method.GetParameters();
+                        if (parameters.Length > 0)
                         {
-                            types[i] = parameters[i].ParameterType;
+                            var types = new Type[parameters.Length];
+                            for (int i = 0; i < parameters.Length; ++i)
+                            {
+                                types[i] = parameters[i].ParameterType;
+                            }
+                            ParameterTypes.Add(attribute.MsgType, types);
                         }
-                        ParameterTypes.Add(attribute.MsgType, types);
-                    }
-                    else
-                    {
-                        ParameterTypes.Add(attribute.MsgType, null);
+                        else
+                        {
+                            ParameterTypes.Add(attribute.MsgType, null);
+                        }
                     }
 
                     attribute.RegisterMessage(method, classType);
