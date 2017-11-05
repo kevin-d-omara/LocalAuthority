@@ -5,12 +5,12 @@ using System.Reflection;
 namespace LocalAuthority.Message
 {
     /// <summary>
-    /// Static class for registering message commands.
+    /// Static class for registering message-based command/rpc callbacks.
     /// </summary>
     public static class Registration
     {
         /// <summary>
-        /// Use reflection to register methods marked with the <see cref="MessageCommand"/> attribute.
+        /// Use reflection to register methods marked with the <see cref="MessageCommand"/> or <see cref="MessageRpc"/> attribute.
         /// </summary>
         public static void RegisterCommands(Type classType)
         {
