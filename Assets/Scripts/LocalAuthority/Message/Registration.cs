@@ -39,6 +39,13 @@ namespace LocalAuthority.Message
                         messageTypes.Add(classType, attribute.MsgType);
                     }
 
+                    // Store map from method name to message id.
+                    var methodName = method.Name;
+                    if (!MsgTypes.ContainsKey(methodName))
+                    {
+                        MsgTypes.Add(methodName, attribute.MsgType); // TODO: Same method name, different class?
+                    }
+
                     // Store Type list for the method parameters.
                     if (!ParameterTypes.ContainsKey(attribute.MsgType))
                     {

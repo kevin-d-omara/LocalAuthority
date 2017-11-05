@@ -13,16 +13,19 @@ namespace LocalAuthority.Components
     public abstract class LocalAuthorityBehaviour : NetworkBehaviour
     {
         /// <summary>
-        /// Invoke the message-based command on the server, or rpc on all clients.
+        /// Invoke a message-based command on the server, or rpc on all clients.
         /// </summary>
-        /// <param name="values">Values to load the message with, besides netId.</param>
-        /// <returns>True if the command was sent.</returns>
+        /// <param name="methodName">Use nameof(Method) on a method tagged with a <see cref="Message"/> attribute.</param>
+        /// <param name="values">An argument list for the method. This is an array of objects with the same number,
+        /// order, and type as the parameters of the method. Omit this if the method has no parameters.</param>
+        /// <returns>True if the message was sent.</returns>
         // TODO: rename InvokeCommand() & InvokeRpc() or one good combined name.
-        protected bool SendCommand(short msgType, params object[] values)
+        protected bool SendCommand(string methodName, params object[] values)
         {
+            var msgType = Registration.MsgTypes[methodName]; // TODO: Same method name, different class?
             var msg = new VarArgsNetIdMessasge(netId, values);
 
-//            Registration.InvokePrediction(msgType, values);
+            // Execute immediately if client-side prediction is enabled.
             MethodInfo method;
             if (Registration.RpcsWithPrediction.TryGetValue(msgType, out method))
             {
@@ -31,7 +34,6 @@ namespace LocalAuthority.Components
 
             return NetworkManager.singleton.client.Send(msgType, msg);
         }
-
 
         #region Private
 

@@ -55,7 +55,7 @@ namespace LocalAuthority.Components
         /// </summary>
         public void RequestOwnership()
         {
-            SendCommand((short) MsgType.RequestOwnership, LocalPlayer.netId);
+            SendCommand(nameof(CmdRequestOwnership), LocalPlayer.netId);
 
             // Give immediate control (client-side prediction).
             if (IsOwnedByNone)
@@ -69,7 +69,7 @@ namespace LocalAuthority.Components
         /// </summary>
         public void ReleaseOwnership()
         {
-            SendCommand((short)MsgType.ReleaseOwnership, LocalPlayer.netId);
+            SendCommand(nameof(CmdReleaseOwnership), LocalPlayer.netId);
 
             // Immediately release control (client-side prediction).
             if (IsOwnedByLocal)
@@ -82,9 +82,9 @@ namespace LocalAuthority.Components
         // Message Commands ----------------------------------------------------
 
         [MessageCommand((short)MsgType.RequestOwnership)]
-        private void CmdRequestOwnership(NetworkInstanceId netId2)
+        private void CmdRequestOwnership(NetworkInstanceId requesterNetId)
         {
-            var requester = Utility.FindLocalComponent<NetworkIdentity>(netId2);
+            var requester = Utility.FindLocalComponent<NetworkIdentity>(requesterNetId);
 
             // Prevent players from stealing ownership.
             if (IsOwnedByNone)
@@ -94,9 +94,9 @@ namespace LocalAuthority.Components
         }
 
         [MessageCommand((short)MsgType.ReleaseOwnership)]
-        private void CmdReleaseOwnership(NetworkInstanceId netId2)
+        private void CmdReleaseOwnership(NetworkInstanceId requesterNetId)
         {
-            var requester = Utility.FindLocalComponent<NetworkIdentity>(netId2);
+            var requester = Utility.FindLocalComponent<NetworkIdentity>(requesterNetId);
 
             // Prevent players from dropping someone else's ownership.
             if (Owner == requester)
