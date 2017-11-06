@@ -28,7 +28,7 @@ namespace LocalAuthority.Message
                     var callbackHashcode = Utility.GetCallbackHashcode(classType, method.Name);
                     CacheParameterTypeList(callbackHashcode, method);
 
-                    var callback = attribute.GetCallback2(method, classType);
+                    var callback = attribute.GetCallback(method, classType);
                     Callbacks.Add(callbackHashcode, callback);
 
                     if (attribute.ClientSidePrediction)

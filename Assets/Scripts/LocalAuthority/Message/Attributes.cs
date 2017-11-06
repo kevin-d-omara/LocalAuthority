@@ -35,20 +35,14 @@ namespace LocalAuthority.Message
         /// </summary>
         /// <param name="classType">Type of script where the method code is written.</param>
         // TODO: simplify return type.
-        public Action<NetworkMessage, VarArgsNetIdMessasge> GetCallback2(MethodInfo method, Type classType)
+        public Action<NetworkMessage, VarArgsNetIdMessasge> GetCallback(MethodInfo method, Type classType)
         {
             // Same number, order, and type as parameters to GetCallback2<TMsg, TComp>().
             var args = new object[] { method };
 
             // Call GetCallback2<TComp> with correct generic type.
-            var registerMessage = RegisterMessageInfo.MakeGenericMethod(classType);
+            var registerMessage = CachedInfo.MakeGenericMethod(classType);
             return (Action<NetworkMessage, VarArgsNetIdMessasge>) registerMessage.Invoke(this, args);
-        }
-
-        // TODO: replace reflected generic call to GetCallback, not GetCallback2.
-        private Action<NetworkMessage, VarArgsNetIdMessasge> GetCallback2<TComp>(MethodInfo method) where TComp : LocalAuthorityBehaviour
-        {
-            return GetCallback<TComp>(method);
         }
 
         /// <summary>
@@ -61,16 +55,16 @@ namespace LocalAuthority.Message
         // Initialization ------------------------------------------------------
 
         /// <summary>
-        /// Cached MethodInfo for <see cref="GetCallback2{TComp}"/>.
+        /// Cached MethodInfo for <see cref="GetCallback{TComp}"/>.
         /// </summary>
-        private static MethodInfo RegisterMessageInfo { get; }
+        private static MethodInfo CachedInfo { get; }
 
         static Message()
         {
             var parameterTypes = new Type[] { typeof(MethodInfo) };
             var flags = BindingFlags.Instance | BindingFlags.NonPublic;
-            var info = typeof(Message).GetMethod(nameof(GetCallback2), flags, null, parameterTypes, null);
-            RegisterMessageInfo = info;
+            var info = typeof(Message).GetMethod(nameof(GetCallback), flags, null, parameterTypes, null);
+            CachedInfo = info;
         }
     }
 
