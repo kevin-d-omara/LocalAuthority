@@ -1,6 +1,5 @@
 ﻿using LocalAuthority.Message;
 using UnityEngine.Networking;
-using MsgType = LocalAuthority.Message.MsgType;
 
 namespace LocalAuthority.Components
 {
@@ -69,7 +68,7 @@ namespace LocalAuthority.Components
 
         // Message Commands ----------------------------------------------------
 
-        [MessageCommand((short)MsgType.RequestOwnership, ClientSidePrediction = true)]
+        [MessageCommand(ClientSidePrediction = true)]
         private void CmdRequestOwnership(NetworkInstanceId requesterNetId)
         {
             var requester = Utility.FindLocalComponent<NetworkIdentity>(requesterNetId);
@@ -81,10 +80,16 @@ namespace LocalAuthority.Components
             }
         }
 
-        [MessageCommand((short)MsgType.ReleaseOwnership, ClientSidePrediction = true)]
+        [MessageCommand(ClientSidePrediction = true)]
         private void CmdReleaseOwnership(NetworkInstanceId requesterNetId)
         {
             var requester = Utility.FindLocalComponent<NetworkIdentity>(requesterNetId);
+
+            // Prevent players from dropping someone else's ownership.
+            if (Owner == requester)
+            {
+                Owner = null;
+            }
         }
 
 

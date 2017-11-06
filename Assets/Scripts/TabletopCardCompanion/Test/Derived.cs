@@ -1,7 +1,6 @@
 ﻿using LocalAuthority.Message;
 using TabletopCardCompanion.Debug;
 using UnityEngine.Networking;
-using Utility = LocalAuthority.Utility;
 
 namespace TabletopCardCompanion
 {
@@ -9,13 +8,13 @@ namespace TabletopCardCompanion
     {
         // Note: Attribute unecessary, but not harmful.
         //       Derived attribute overrides base attribute.
-        [MessageRpc((short)MsgType.BaseFlip, ClientSidePrediction = true)]
+        [MessageRpc(ClientSidePrediction = true)]
         public override void FlipOver()
         {
             DebugStreamer.AddMessage("Derived: FlipOver");
         }
 
-        [MessageRpc((short)MsgType.BaseScale, ClientSidePrediction = true)]
+        [MessageRpc(ClientSidePrediction = true)]
         public override void Scale(float percent)
         {
             DebugStreamer.AddMessage("Derived: Scale " + percent + " percent.");

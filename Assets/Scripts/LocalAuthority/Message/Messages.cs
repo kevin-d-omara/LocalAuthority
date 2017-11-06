@@ -15,23 +15,24 @@ namespace LocalAuthority.Message
         public NetworkInstanceId netId;
 
         /// <summary>
+        /// Hashcode of the fully qualified method name of the callback.
+        /// </summary>
+        public int callbackHash;
+
+        /// <summary>
         /// An argument list for a callback method. This is an array of objects with the same number, order, and type as
         /// the parameters of the method. It will be null if the method has no parameters.
         /// </summary>
         public object[] args;
 
-        /// <summary>
-        /// Message id for the callback method; MUST set before calling <see cref="Deserialize"/>.
-        /// </summary>
-        public short msgType = -1;
-
         public VarArgsNetIdMessasge()
         {
         }
 
-        public VarArgsNetIdMessasge(NetworkInstanceId id, params object[] values)
+        public VarArgsNetIdMessasge(NetworkInstanceId id, int callbackHashcode, params object[] values)
         {
             netId = id;
+            callbackHash = callbackHashcode;
             args = values;
         }
 
@@ -40,15 +41,10 @@ namespace LocalAuthority.Message
             base.Deserialize(reader);
 
             netId = reader.ReadNetworkId();
-
-            if (msgType == -1)
-            {
-                if (LogFilter.logFatal) { Debug.LogError("Cannot deserialize message: the field " + nameof(msgType) + "hasn't been set."); }
-                return;
-            }
+            callbackHash = reader.ReadInt32();
 
             Type[] types;
-            if (Registration.ParameterTypes.TryGetValue(msgType, out types))
+            if (Registration.ParameterTypes.TryGetValue(callbackHash, out types))
             {
                 if (types == null) return;
 
@@ -62,7 +58,7 @@ namespace LocalAuthority.Message
             }
             else
             {
-                if (LogFilter.logFatal) { Debug.LogError("Cannot deserialize message: message id " + msgType + " not found "); }
+                if (LogFilter.logFatal) { Debug.LogError("Cannot deserialize message: callback hash " + callbackHash + " not found. Perhaps the method is being invoked from the wrong class."); }
             }
         }
 
@@ -71,6 +67,7 @@ namespace LocalAuthority.Message
             base.Serialize(writer);
 
             writer.Write(netId);
+            writer.Write(callbackHash);
 
             if (args == null) return;
             for (int i = 0; i < args.Length; ++i)

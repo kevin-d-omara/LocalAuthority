@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using UnityEngine.Networking;
 
 namespace LocalAuthority.Message
 {
     /// <summary>
-    /// Static class for registering message-based command/rpc callbacks.
+    /// Static class for creating message-based command/rpc callbacks.
     /// </summary>
     public static class Registration
     {
@@ -14,7 +15,7 @@ namespace LocalAuthority.Message
         /// </summary>
         public static void RegisterCommands(Type classType)
         {
-            if (AlreadyRegistered(classType)) return;
+            if (AlreadyRegistered.Contains(classType)) return;
 
             // TODO: What about inheritence? I.e. DoubleSidedCardController : CardController?
             var methods = classType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
@@ -24,11 +25,18 @@ namespace LocalAuthority.Message
                 var attribute = method.GetCustomAttribute<Message>(true);
                 if (attribute != null)
                 {
-                    CacheRegisteredClass(classType, attribute);
-                    CacheMessageType(method, classType, attribute);
-                    CacheParameterTypeList(method, attribute);
+                    var callbackHashcode = Utility.GetCallbackHashcode(classType, method.Name);
+                    CacheParameterTypeList(callbackHashcode, method);
 
-                    attribute.RegisterMessage(method, classType);
+                    var callback = attribute.GetCallback2(method, classType);
+                    Callbacks.Add(callbackHashcode, callback);
+
+                    if (attribute.ClientSidePrediction)
+                    {
+                        RegisterPredictedRpc(callbackHashcode, method);
+                    }
+
+                    AlreadyRegistered.Add(classType);
                 }
             }
         }
@@ -37,48 +45,11 @@ namespace LocalAuthority.Message
         #region Private
 
         /// <summary>
-        /// True if the class has already been registered on the server and clients.
-        /// </summary>
-        private static bool AlreadyRegistered(Type classType)
-        {
-            short msgType;
-            if (RegisteredClasses.TryGetValue(classType, out msgType))
-            {
-                if (Message.HasBeenRegistered(msgType)) return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Record that this class has been registered.
-        /// </summary>
-        private static void CacheRegisteredClass(Type classType, Message attribute)
-        {
-            // Store the first method. We only need one value per class to check Message.HasBeenRegistered().
-            if (!RegisteredClasses.ContainsKey(classType))
-            {
-                RegisteredClasses.Add(classType, attribute.MsgType);
-            }
-        }
-
-        /// <summary>
-        /// Record mapping from method name to message id.
-        /// </summary>
-        private static void CacheMessageType(MethodInfo method, Type classType, Message attribute)
-        {
-            var methodName = Utility.GetFullyQualifiedMethodName(classType, method.Name);
-            if (!MsgTypes.ContainsKey(methodName))
-            {
-                MsgTypes.Add(methodName, attribute.MsgType);
-            }
-        }
-
-        /// <summary>
         /// Record a list of Types for this method's parameters.
         /// </summary>
-        private static void CacheParameterTypeList(MethodInfo method, Message attribute)
+        private static void CacheParameterTypeList(int callbackHashcode, MethodInfo method)
         {
-            if (!ParameterTypes.ContainsKey(attribute.MsgType))
+            if (!ParameterTypes.ContainsKey(callbackHashcode))
             {
                 var parameters = method.GetParameters();
                 if (parameters.Length > 0)
@@ -88,11 +59,11 @@ namespace LocalAuthority.Message
                     {
                         types[i] = parameters[i].ParameterType;
                     }
-                    ParameterTypes.Add(attribute.MsgType, types);
+                    ParameterTypes.Add(callbackHashcode, types);
                 }
                 else
                 {
-                    ParameterTypes.Add(attribute.MsgType, null);
+                    ParameterTypes.Add(callbackHashcode, null);
                 }
             }
         }
@@ -100,11 +71,11 @@ namespace LocalAuthority.Message
         /// <summary>
         /// Store methods which have client-side prediction enabled.
         /// </summary>
-        internal static void RegisterPredictedRpc(short msgType, MethodInfo method)
+        internal static void RegisterPredictedRpc(int callbackHashcode, MethodInfo method)
         {
-            if (!ClientSidePrediction.ContainsKey(msgType))
+            if (!ClientSidePrediction.ContainsKey(callbackHashcode))
             {
-                ClientSidePrediction.Add(msgType, method);
+                ClientSidePrediction.Add(callbackHashcode, method);
             }
         }
 
@@ -112,25 +83,24 @@ namespace LocalAuthority.Message
         // Data Cache ----------------------------------------------------------
 
         /// <summary>
-        /// Mapping from registered class to message id of its first method.
-        /// Only one message id is needed per class to check <see cref="Message.HasBeenRegistered"/>
+        /// Mapping from callback hashcode to callback.
         /// </summary>
-        private static readonly Dictionary<Type, short> RegisteredClasses = new Dictionary<Type, short>();
+        internal static Dictionary<int, Action<NetworkMessage, VarArgsNetIdMessasge>> Callbacks = new Dictionary<int, Action<NetworkMessage, VarArgsNetIdMessasge>>();
 
         /// <summary>
-        /// Mapping from method name to message id.
+        /// Mapping from callback hashcode to a list of Types for the callback's parameters.
         /// </summary>
-        internal static readonly Dictionary<string, short> MsgTypes = new Dictionary<string, short>();
+        internal static readonly Dictionary<int, Type[]> ParameterTypes = new Dictionary<int, Type[]>();
 
         /// <summary>
-        /// Mapping from message id to a list of Types for the callback's parameters.
+        /// Mapping from callback hashcode to method info for methods with client-side prediction enabled.
         /// </summary>
-        internal static readonly Dictionary<short, Type[]> ParameterTypes = new Dictionary<short, Type[]>();
+        internal static readonly Dictionary<int, MethodInfo> ClientSidePrediction = new Dictionary<int, MethodInfo>();
 
         /// <summary>
-        /// Mapping from message id to method info for methods with client-side prediction enabled.
+        /// Classes that have already had their callbacks created.
         /// </summary>
-        internal static readonly Dictionary<short, MethodInfo> ClientSidePrediction = new Dictionary<short, MethodInfo>();
+        internal static readonly HashSet<Type> AlreadyRegistered = new HashSet<Type>();
 
         #endregion
     }

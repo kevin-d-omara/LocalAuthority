@@ -1,7 +1,6 @@
 ﻿using LocalAuthority.Message;
 using UnityEngine;
 using UnityEngine.Networking;
-using MsgType = LocalAuthority.Message.MsgType;
 
 namespace LocalAuthority.Components
 {
@@ -58,7 +57,7 @@ namespace LocalAuthority.Components
             InvokeCommand(nameof(CmdUpdateTargetSyncPosition), transform.position);
         }
 
-        [MessageCommand((short)MsgType.UpdateTargetSyncPosition)]
+        [MessageCommand]
         private void CmdUpdateTargetSyncPosition(Vector3 newTargetSyncPosition)
         {
             targetSyncPosition = newTargetSyncPosition;

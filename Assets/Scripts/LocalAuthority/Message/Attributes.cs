@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Reflection;
 using LocalAuthority.Components;
-using UnityEngine;
 using UnityEngine.Networking;
 
 namespace LocalAuthority.Message
@@ -24,11 +23,6 @@ namespace LocalAuthority.Message
         // Data ----------------------------------------------------------------
 
         /// <summary>
-        /// A number unique to this callback. <see cref="MsgType"/> and <see cref="UnityEngine.Networking.MsgType"/>
-        /// </summary>
-        public short MsgType { get; set; }
-
-        /// <summary>
         /// True if client-side prediction is enabled. The attributed method will be run immediately on the caller.
         /// </summary>
         public bool ClientSidePrediction { get; set; }
@@ -40,72 +34,34 @@ namespace LocalAuthority.Message
         /// Register a message-based callback on the server and clients.
         /// </summary>
         /// <param name="classType">Type of script where the method code is written.</param>
-        public void RegisterMessage(MethodInfo method, Type classType)
+        // TODO: simplify return type.
+        public Action<NetworkMessage, VarArgsNetIdMessasge> GetCallback2(MethodInfo method, Type classType)
         {
-            if (!Utility.IsSameOrSubclass(typeof(LocalAuthorityBehaviour), classType))
-            {
-                if (LogFilter.logFatal) { Debug.LogError("Cannot register method " + method + ". Containing clas " + classType + " must inherit from " + typeof(LocalAuthorityBehaviour)); }
-                return;
-            }
-
-            // Same number, order, and type as parameters to RegisterMessage<TMsg, TComp>().
+            // Same number, order, and type as parameters to GetCallback2<TMsg, TComp>().
             var args = new object[] { method };
 
-            // Call RegisterMessage<TComp> with correct generic type.
+            // Call GetCallback2<TComp> with correct generic type.
             var registerMessage = RegisterMessageInfo.MakeGenericMethod(classType);
-            registerMessage.Invoke(this, args);
+            return (Action<NetworkMessage, VarArgsNetIdMessasge>) registerMessage.Invoke(this, args);
         }
 
-        private void RegisterMessage<TComp>(MethodInfo method) where TComp : LocalAuthorityBehaviour
+        // TODO: replace reflected generic call to GetCallback, not GetCallback2.
+        private Action<NetworkMessage, VarArgsNetIdMessasge> GetCallback2<TComp>(MethodInfo method) where TComp : LocalAuthorityBehaviour
         {
-            var callback = GetCallback<TComp>(method);
-            RegisterWithServer(callback);
-            RegisterWithClient(callback);
-
-            if (ClientSidePrediction)
-            {
-                Registration.RegisterPredictedRpc(MsgType, method);
-            }
+            return GetCallback<TComp>(method);
         }
 
         /// <summary>
         /// Return a callback that behaves like a <see cref="CommandAttribute"/> or <see cref="ClientRpcAttribute"/>.
         /// </summary>
-        protected abstract NetworkMessageDelegate GetCallback<TComp>(MethodInfo callback)
+        protected abstract Action<NetworkMessage, VarArgsNetIdMessasge> GetCallback<TComp>(MethodInfo callback)
             where TComp : LocalAuthorityBehaviour;
-
-        /// <summary>
-        /// Return true if the specified message id has already been registered to a callback on the server or client.
-        /// <remarks>
-        /// Each time a player leaves a networked match, their NetworkServer and NetworKClient handlers get erased.
-        /// </remarks>
-        /// </summary>
-        public static bool HasBeenRegistered(short msgType)
-        {
-            return NetworkManager.singleton.client.handlers.ContainsKey(msgType);
-        }
-
-        /// <summary>
-        /// Register the callback so that it may be invoked on the server from a client.
-        /// </summary>
-        protected void RegisterWithServer(NetworkMessageDelegate callback)
-        {
-            NetworkServer.RegisterHandler(MsgType, callback);
-        }
-
-        /// <summary>
-        /// Register the callback so that it may be invoked on a client from the server.
-        /// </summary>
-        protected void RegisterWithClient(NetworkMessageDelegate callback)
-        {
-            NetworkManager.singleton.client.RegisterHandler(MsgType, callback);
-        }
 
 
         // Initialization ------------------------------------------------------
 
         /// <summary>
-        /// Cached MethodInfo for <see cref="RegisterMessage{TComp}"/>.
+        /// Cached MethodInfo for <see cref="GetCallback2{TComp}"/>.
         /// </summary>
         private static MethodInfo RegisterMessageInfo { get; }
 
@@ -113,7 +69,7 @@ namespace LocalAuthority.Message
         {
             var parameterTypes = new Type[] { typeof(MethodInfo) };
             var flags = BindingFlags.Instance | BindingFlags.NonPublic;
-            var info = typeof(Message).GetMethod(nameof(RegisterMessage), flags, null, parameterTypes, null);
+            var info = typeof(Message).GetMethod(nameof(GetCallback2), flags, null, parameterTypes, null);
             RegisterMessageInfo = info;
         }
     }
@@ -127,25 +83,15 @@ namespace LocalAuthority.Message
     [AttributeUsage(AttributeTargets.Method)]
     public class MessageCommand : Message
     {
-        public MessageCommand(short msgType)
-        {
-            MsgType = msgType;
-        }
-
         /// <summary>
         /// Return a callback that behaves like a [Command].
-        /// When invoked with <see cref="LocalAuthorityBehaviour.SendCommand"/>, it will run only on the server.
+        /// When invoked with <see cref="LocalAuthorityBehaviour.InvokeCommand"/>, it will run only on the server.
         /// </summary>
-        protected override NetworkMessageDelegate GetCallback<TComp>(MethodInfo callback)
+        protected override Action<NetworkMessage, VarArgsNetIdMessasge> GetCallback<TComp>(MethodInfo callback)
         {
-            return netMsg =>
+            return (netMsg, msg) =>
             {
-                var msg = new VarArgsNetIdMessasge();
-                msg.msgType = netMsg.msgType;
-                msg.Deserialize(netMsg.reader);
-
                 var obj = Utility.FindLocalComponent<TComp>(msg.netId);
-
                 callback.Invoke(obj, msg.args);
             };
         }
@@ -160,25 +106,15 @@ namespace LocalAuthority.Message
     [AttributeUsage(AttributeTargets.Method)]
     public class MessageRpc : Message
     {
-        public MessageRpc(short msgType)
-        {
-            MsgType = msgType;
-        }
-
         /// <summary>
         /// Return a callback that behaves like a [ClientRpc].
-        /// When invoked with <see cref="LocalAuthorityBehaviour.SendCommand"/>, it will run on all clients.
+        /// When invoked with <see cref="LocalAuthorityBehaviour.InvokeRpc"/>, it will run on all clients.
         /// </summary>
-        protected override NetworkMessageDelegate GetCallback<TComp>(MethodInfo callback)
+        protected override Action<NetworkMessage, VarArgsNetIdMessasge> GetCallback<TComp>(MethodInfo callback)
         {
-            return netMsg =>
+            return (netMsg, msg) =>
             {
-                var msg = new VarArgsNetIdMessasge();
-                msg.msgType = netMsg.msgType;
-                msg.Deserialize(netMsg.reader);
-
                 var obj = Utility.FindLocalComponent<TComp>(msg.netId);
-
                 Action rpc = () => callback.Invoke(obj, msg.args);
                 InvokeRpcOnClients(obj, rpc, netMsg, msg);
             };

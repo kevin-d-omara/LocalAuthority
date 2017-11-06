@@ -36,11 +36,11 @@ namespace LocalAuthority
         }
 
         /// <summary>
-        /// Return true if <paramref name="potentialDescendant"/> is the same or a sublcass of the <paramref name="potentialBase"/>.
+        /// Return the hashcode for the fully qualified method.
         /// </summary>
-        public static bool IsSameOrSubclass(Type potentialBase, Type potentialDescendant)
+        public static int GetCallbackHashcode(Type classType, string methodName)
         {
-            return potentialDescendant.IsSubclassOf(potentialBase) || potentialDescendant == potentialBase;
+            return GetHashCode(GetFullyQualifiedMethodName(classType, methodName));
         }
 
         /// <summary>
@@ -49,6 +49,32 @@ namespace LocalAuthority
         public static string GetFullyQualifiedMethodName(Type classType, string methodName)
         {
             return classType.FullName + "." + methodName;
+        }
+
+        /// <summary>
+        /// Copied from UNetBehaviourProcessor.cs, which in turn copied from Mono string.GetHashCode(), so that we generate same hashes regardless of runtime (mono/MS .NET).
+        /// </summary>
+        public static int GetHashCode(string s)
+        {
+            unsafe
+            {
+                int length = s.Length;
+                fixed (char* c = s)
+                {
+                    char* cc = c;
+                    char* end = cc + length - 1;
+                    int h = 0;
+                    for (; cc < end; cc += 2)
+                    {
+                        h = (h << 5) - h + *cc;
+                        h = (h << 5) - h + cc[1];
+                    }
+                    ++end;
+                    if (cc < end)
+                        h = (h << 5) - h + *cc;
+                    return h;
+                }
+            }
         }
     }
 }
