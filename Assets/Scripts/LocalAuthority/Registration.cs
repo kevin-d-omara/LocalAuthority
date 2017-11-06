@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine.Networking;
 
-namespace LocalAuthority.Message
+namespace LocalAuthority
 {
     /// <summary>
     /// Static class for creating message-based command/rpc callbacks.

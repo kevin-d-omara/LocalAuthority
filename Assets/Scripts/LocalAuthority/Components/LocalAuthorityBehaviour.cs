@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using LocalAuthority.Message;
 using UnityEngine;
 using UnityEngine.Networking;
 

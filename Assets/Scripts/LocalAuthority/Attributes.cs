@@ -4,7 +4,7 @@ using System.Reflection;
 using LocalAuthority.Components;
 using UnityEngine.Networking;
 
-namespace LocalAuthority.Message
+namespace LocalAuthority
 {
     /// <summary>
     /// This is an attribute that can be put on methods of a <see cref="LocalAuthorityBehaviour"/> class to allow them

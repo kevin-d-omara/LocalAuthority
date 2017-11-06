@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace LocalAuthority.Message
+namespace LocalAuthority
 {
     public static class NetworkReaderExtensions
     {

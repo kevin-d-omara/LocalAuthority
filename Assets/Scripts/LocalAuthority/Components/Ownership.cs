@@ -1,5 +1,4 @@
-﻿using LocalAuthority.Message;
-using UnityEngine.Networking;
+﻿using UnityEngine.Networking;
 
 namespace LocalAuthority.Components
 {

@@ -1,5 +1,5 @@
-﻿using LocalAuthority.Components;
-using LocalAuthority.Message;
+﻿using LocalAuthority;
+using LocalAuthority.Components;
 using UnityEngine;
 
 namespace TabletopCardCompanion.GameElement

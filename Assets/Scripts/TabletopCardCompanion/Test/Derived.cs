@@ -1,4 +1,4 @@
-﻿using LocalAuthority.Message;
+﻿using LocalAuthority;
 using TabletopCardCompanion.Debug;
 using UnityEngine.Networking;
 

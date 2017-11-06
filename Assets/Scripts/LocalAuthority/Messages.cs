@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace LocalAuthority.Message
+namespace LocalAuthority
 {
     /// <summary>
     /// Message that can hold any type readable and writeable by <see cref="NetworkReader"/> and <see cref="NetworkWriter"/>.
