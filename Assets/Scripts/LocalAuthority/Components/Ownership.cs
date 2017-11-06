@@ -65,12 +65,12 @@ namespace LocalAuthority.Components
         }
 
 
-        // Message Commands ----------------------------------------------------
+        // Message Callbacks ---------------------------------------------------
 
         [MessageCommand(ClientSidePrediction = true)]
         private void CmdRequestOwnership(NetworkInstanceId requesterNetId)
         {
-            var requester = Utility.FindLocalComponent<NetworkIdentity>(requesterNetId);
+            var requester = FindLocalComponent<NetworkIdentity>(requesterNetId);
 
             // Prevent players from stealing ownership.
             if (IsOwnedByNone)
@@ -82,7 +82,7 @@ namespace LocalAuthority.Components
         [MessageCommand(ClientSidePrediction = true)]
         private void CmdReleaseOwnership(NetworkInstanceId requesterNetId)
         {
-            var requester = Utility.FindLocalComponent<NetworkIdentity>(requesterNetId);
+            var requester = FindLocalComponent<NetworkIdentity>(requesterNetId);
 
             // Prevent players from dropping someone else's ownership.
             if (Owner == requester)

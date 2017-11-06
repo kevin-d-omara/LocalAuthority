@@ -1,5 +1,4 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -7,15 +6,15 @@ namespace LocalAuthority.Components
 {
     /// <summary>
     /// Extend this class instead of <see cref="NetworkBehaviour"/> to enable message-based commands and rpcs. Place the
-    /// attributes <see cref="MessageCommand"/> and <see cref="MessageRpc"/> above methods. Invoke these with
-    /// <see cref="InvokeCommand"/> and <see cref="InvokeRpc"/>
+    /// attributes <see cref="MessageCommand"/> and <see cref="MessageRpc"/> above methods and then Invoke them with
+    /// <see cref="InvokeCommand"/> and <see cref="InvokeRpc"/>. <seealso cref="MessageBasedCallback"/>
     /// </summary>
     public abstract class LocalAuthorityBehaviour : NetworkBehaviour
     {
         /// <summary>
         /// A unique number to identify messages sent through LocalAuthority.
         /// </summary>
-        public const short Callback = MsgType.Highest + 1;
+        public const short MessageCallback = MsgType.Highest + 1;
 
         /// <summary>
         /// Invoke a message-based Command on the server.
@@ -50,17 +49,43 @@ namespace LocalAuthority.Components
         /// </summary>
         private bool InvokeCommandOrRpc(string methodName, params object[] values)
         {
-            var callbackHash = Utility.GetCallbackHashcode(GetType(), methodName);
-            var msg = new VarArgsNetIdMessasge(netId, callbackHash, values);
+            var hash = Registration.GetCallbackHashcode(GetType(), methodName);
+            var msg = new VarArgsNetIdMessasge(netId, hash, values);
 
             // Execute immediately if client-side prediction is enabled.
             MethodInfo method;
-            if (Registration.ClientSidePrediction.TryGetValue(callbackHash, out method))
+            if (Registration.ClientSidePrediction.TryGetValue(hash, out method))
             {
                 method.Invoke(this, msg.args);
             }
 
-            return NetworkManager.singleton.client.Send(Callback, msg);
+            return NetworkManager.singleton.client.Send(MessageCallback, msg);
+        }
+
+        /// <summary>
+        /// Find a component of type T attached to a game object with the given network id.
+        /// </summary>
+        /// <typeparam name="T">Type of the component to find.</typeparam>
+        /// <param name="netId">The netId of the networked object.</param>
+        /// <returns>The component attached to the game object with matching netId, or default(T) if the object or
+        /// component are not found.</returns>
+        public static T FindLocalComponent<T>(NetworkInstanceId netId)
+        {
+            var foundObject = ClientScene.FindLocalObject(netId);
+            if (foundObject == null)
+            {
+                if (LogFilter.logError) { Debug.LogError("No GameObject exists for the given NetworkInstanceId: " + netId); }
+                return default(T);
+            }
+
+            var foundComponent = foundObject.GetComponent<T>();
+            if (foundComponent == null)
+            {
+                if (LogFilter.logError) { Debug.LogError("The GameObject " + foundObject + " does not have a " + typeof(T) + " component attached."); }
+                return default(T);
+            }
+
+            return foundComponent;
         }
 
         protected virtual void Awake()
@@ -77,8 +102,8 @@ namespace LocalAuthority.Components
         /// </summary>
         private void RegisterMessageHandler()
         {
-            NetworkServer.RegisterHandler(Callback, RedirectCallback);
-            NetworkManager.singleton.client.RegisterHandler(Callback, RedirectCallback);
+            NetworkServer.RegisterHandler(MessageCallback, RedirectCallback);
+            NetworkManager.singleton.client.RegisterHandler(MessageCallback, RedirectCallback);
         }
 
         /// <summary>
@@ -88,7 +113,7 @@ namespace LocalAuthority.Components
         {
             var msg = netMsg.ReadMessage<VarArgsNetIdMessasge>();
 
-            Action<NetworkMessage, VarArgsNetIdMessasge> callback;
+            MessageCallback callback;
             if (Registration.Callbacks.TryGetValue(msg.callbackHash, out callback))
             {
                 callback(netMsg, msg);

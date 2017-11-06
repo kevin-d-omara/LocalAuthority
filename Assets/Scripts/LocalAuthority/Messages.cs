@@ -5,7 +5,8 @@ using UnityEngine.Networking;
 namespace LocalAuthority
 {
     /// <summary>
-    /// Message that can hold any type readable and writeable by <see cref="NetworkReader"/> and <see cref="NetworkWriter"/>.
+    /// Message tha holds a variable number of objects. Each object's Type must be readable and writeable
+    /// by <see cref="NetworkReader"/> and <see cref="NetworkWriter"/>.
     /// </summary>
     public class VarArgsNetIdMessasge : MessageBase
     {
@@ -20,8 +21,8 @@ namespace LocalAuthority
         public int callbackHash;
 
         /// <summary>
-        /// An argument list for a callback method. This is an array of objects with the same number, order, and type as
-        /// the parameters of the method. It will be null if the method has no parameters.
+        /// An argument list for the callback method. This is an array of objects with the same number, order, and type
+        /// as the parameters of the callback. It will be null if the method has no parameters.
         /// </summary>
         public object[] args;
 
@@ -43,6 +44,7 @@ namespace LocalAuthority
             netId = reader.ReadNetworkId();
             callbackHash = reader.ReadInt32();
 
+            // Parse the args object array.
             Type[] types;
             if (Registration.ParameterTypes.TryGetValue(callbackHash, out types))
             {

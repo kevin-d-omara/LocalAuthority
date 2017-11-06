@@ -6,6 +6,11 @@ using UnityEngine.Networking;
 namespace LocalAuthority
 {
     /// <summary>
+    /// The callback delegate used for message-based command/rpc methods.
+    /// </summary>
+    public delegate void MessageCallback(NetworkMessage netMsg, VarArgsNetIdMessasge msg);
+
+    /// <summary>
     /// Static class for creating message-based command/rpc callbacks.
     /// </summary>
     public static class Registration
@@ -17,23 +22,21 @@ namespace LocalAuthority
         {
             if (AlreadyRegistered.Contains(classType)) return;
 
-            // TODO: What about inheritence? I.e. DoubleSidedCardController : CardController?
             var methods = classType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
             foreach (var method in methods)
             {
-                var attribute = method.GetCustomAttribute<Message>(true);
+                var attribute = method.GetCustomAttribute<MessageBasedCallback>(true);
                 if (attribute != null)
                 {
-                    var callbackHashcode = Utility.GetCallbackHashcode(classType, method.Name);
-                    CacheParameterTypeList(callbackHashcode, method);
+                    var hash = GetCallbackHashcode(classType, method.Name);
+                    CacheParameterTypeList(hash, method);
 
                     var callback = attribute.GetCallback(method, classType);
-                    Callbacks.Add(callbackHashcode, callback);
+                    Callbacks.Add(hash, callback);
 
                     if (attribute.ClientSidePrediction)
                     {
-                        RegisterPredictedRpc(callbackHashcode, method);
+                        RegisterPredictedRpc(hash, method);
                     }
 
                     AlreadyRegistered.Add(classType);
@@ -41,6 +44,13 @@ namespace LocalAuthority
             }
         }
 
+        /// <summary>
+        /// Return the hashcode for the callback specified by the class and method.
+        /// </summary>
+        public static int GetCallbackHashcode(Type classType, string methodName)
+        {
+            return GetHashCode(GetFullyQualifiedMethodName(classType, methodName));
+        }
 
         #region Private
 
@@ -79,13 +89,46 @@ namespace LocalAuthority
             }
         }
 
+        /// <summary>
+        /// Return the concatenation of "namespace" + "class" + "method".
+        /// </summary>
+        private static string GetFullyQualifiedMethodName(Type classType, string methodName)
+        {
+            return classType.FullName + "." + methodName;
+        }
+
+        /// <summary>
+        /// Copied from UNetBehaviourProcessor.cs, which in turn copied from Mono string.GetHashCode(), so that we generate same hashes regardless of runtime (mono/MS .NET).
+        /// </summary>
+        private static int GetHashCode(string s)
+        {
+            unsafe
+            {
+                int length = s.Length;
+                fixed (char* c = s)
+                {
+                    char* cc = c;
+                    char* end = cc + length - 1;
+                    int h = 0;
+                    for (; cc < end; cc += 2)
+                    {
+                        h = (h << 5) - h + *cc;
+                        h = (h << 5) - h + cc[1];
+                    }
+                    ++end;
+                    if (cc < end)
+                        h = (h << 5) - h + *cc;
+                    return h;
+                }
+            }
+        }
 
         // Data Cache ----------------------------------------------------------
 
         /// <summary>
         /// Mapping from callback hashcode to callback.
         /// </summary>
-        internal static Dictionary<int, Action<NetworkMessage, VarArgsNetIdMessasge>> Callbacks = new Dictionary<int, Action<NetworkMessage, VarArgsNetIdMessasge>>();
+        internal static Dictionary<int, MessageCallback> Callbacks = new Dictionary<int, MessageCallback>();
 
         /// <summary>
         /// Mapping from callback hashcode to a list of Types for the callback's parameters.

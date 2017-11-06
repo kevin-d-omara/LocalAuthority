@@ -10,7 +10,7 @@ namespace LocalAuthority
     /// This is an attribute that can be put on methods of a <see cref="LocalAuthorityBehaviour"/> class to allow them
     /// to be invoked on the server or clients by sending a message from a client.
     /// <para>
-    /// [Message] functions may be invoked from any LocalAuthorityBehaviour, even those not attached to the
+    /// [MessageBasedCallback] functions may be invoked from any LocalAuthorityBehaviour, even those not attached to the
     /// player GameObject. Invoke with <see cref="LocalAuthorityBehaviour.InvokeCommand"/> or <see cref="LocalAuthorityBehaviour.InvokeRpc"/>.
     /// </para>
     /// <para>
@@ -18,7 +18,7 @@ namespace LocalAuthority
     /// </para>
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    public abstract class Message : Attribute
+    public abstract class MessageBasedCallback : Attribute
     {
         // Data ----------------------------------------------------------------
 
@@ -34,21 +34,20 @@ namespace LocalAuthority
         /// Register a message-based callback on the server and clients.
         /// </summary>
         /// <param name="classType">Type of script where the method code is written.</param>
-        // TODO: simplify return type.
-        public Action<NetworkMessage, VarArgsNetIdMessasge> GetCallback(MethodInfo method, Type classType)
+        public MessageCallback GetCallback(MethodInfo method, Type classType)
         {
             // Same number, order, and type as parameters to GetCallback2<TMsg, TComp>().
             var args = new object[] { method };
 
             // Call GetCallback2<TComp> with correct generic type.
             var registerMessage = CachedInfo.MakeGenericMethod(classType);
-            return (Action<NetworkMessage, VarArgsNetIdMessasge>) registerMessage.Invoke(this, args);
+            return (MessageCallback) registerMessage.Invoke(this, args);
         }
 
         /// <summary>
         /// Return a callback that behaves like a <see cref="CommandAttribute"/> or <see cref="ClientRpcAttribute"/>.
         /// </summary>
-        protected abstract Action<NetworkMessage, VarArgsNetIdMessasge> GetCallback<TComp>(MethodInfo callback)
+        protected abstract MessageCallback GetCallback<TComp>(MethodInfo callback)
             where TComp : LocalAuthorityBehaviour;
 
 
@@ -59,11 +58,11 @@ namespace LocalAuthority
         /// </summary>
         private static MethodInfo CachedInfo { get; }
 
-        static Message()
+        static MessageBasedCallback()
         {
             var parameterTypes = new Type[] { typeof(MethodInfo) };
             var flags = BindingFlags.Instance | BindingFlags.NonPublic;
-            var info = typeof(Message).GetMethod(nameof(GetCallback), flags, null, parameterTypes, null);
+            var info = typeof(MessageBasedCallback).GetMethod(nameof(GetCallback), flags, null, parameterTypes, null);
             CachedInfo = info;
         }
     }
@@ -75,17 +74,17 @@ namespace LocalAuthority
     /// Invoke with <see cref="LocalAuthorityBehaviour.InvokeCommand"/>.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    public class MessageCommand : Message
+    public class MessageCommand : MessageBasedCallback
     {
         /// <summary>
         /// Return a callback that behaves like a [Command].
         /// When invoked with <see cref="LocalAuthorityBehaviour.InvokeCommand"/>, it will run only on the server.
         /// </summary>
-        protected override Action<NetworkMessage, VarArgsNetIdMessasge> GetCallback<TComp>(MethodInfo callback)
+        protected override MessageCallback GetCallback<TComp>(MethodInfo callback)
         {
             return (netMsg, msg) =>
             {
-                var obj = Utility.FindLocalComponent<TComp>(msg.netId);
+                var obj = LocalAuthorityBehaviour.FindLocalComponent<TComp>(msg.netId);
                 callback.Invoke(obj, msg.args);
             };
         }
@@ -98,17 +97,17 @@ namespace LocalAuthority
     /// Invoke with <see cref="LocalAuthorityBehaviour.InvokeRpc"/>.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    public class MessageRpc : Message
+    public class MessageRpc : MessageBasedCallback
     {
         /// <summary>
         /// Return a callback that behaves like a [ClientRpc].
         /// When invoked with <see cref="LocalAuthorityBehaviour.InvokeRpc"/>, it will run on all clients.
         /// </summary>
-        protected override Action<NetworkMessage, VarArgsNetIdMessasge> GetCallback<TComp>(MethodInfo callback)
+        protected override MessageCallback GetCallback<TComp>(MethodInfo callback)
         {
             return (netMsg, msg) =>
             {
-                var obj = Utility.FindLocalComponent<TComp>(msg.netId);
+                var obj = LocalAuthorityBehaviour.FindLocalComponent<TComp>(msg.netId);
                 Action rpc = () => callback.Invoke(obj, msg.args);
                 InvokeRpcOnClients(obj, rpc, netMsg, msg);
             };
