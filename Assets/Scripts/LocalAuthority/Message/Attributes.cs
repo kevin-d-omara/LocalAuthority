@@ -120,7 +120,6 @@ namespace LocalAuthority.Message
         /// <param name="action">The action to run on the clients.</param>
         /// <param name="netMsg">The network message passed in to the registered callback.</param>
         /// <param name="msg">The message to forward.</param>
-        /// <param name="clientSidePrediction">True if the action has already been run on the caller.</param>
         private void InvokeRpcOnClients(LocalAuthorityBehaviour obj, Action action, NetworkMessage netMsg, MessageBase msg)
         {
             if (obj.isServer)

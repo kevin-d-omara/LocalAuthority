@@ -85,7 +85,7 @@ namespace LocalAuthority.Components
         /// <summary>
         /// Pitstop for all Command/Rpc messages sent through LocalAuthorityBehaviour.
         /// </summary>
-        private void RedirectCallback(NetworkMessage netMsg)
+        private static void RedirectCallback(NetworkMessage netMsg)
         {
             var msg = netMsg.ReadMessage<VarArgsNetIdMessasge>();
 

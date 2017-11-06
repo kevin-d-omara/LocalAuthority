@@ -8,12 +8,6 @@ namespace TabletopCardCompanion
     public class Base : LocalAuthorityBehaviour
     {
         [MessageRpc(ClientSidePrediction = true)]
-        public void Rotate(int degrees)
-        {
-            DebugStreamer.AddMessage("Base: Rotate " + degrees + " degrees.");
-        }
-
-        [MessageRpc(ClientSidePrediction = true)]
         public virtual void FlipOver()
         {
             DebugStreamer.AddMessage("Base: FlipOver");
@@ -23,6 +17,12 @@ namespace TabletopCardCompanion
         public virtual void Scale(float percent)
         {
             DebugStreamer.AddMessage("Base: Scale " + percent + " percent.");
+        }
+
+        [MessageRpc(ClientSidePrediction = true)]
+        public void Rotate(int degrees)
+        {
+            DebugStreamer.AddMessage("Base: Rotate " + degrees + " degrees.");
         }
 
         private void OnMouseOver()

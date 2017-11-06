@@ -8,7 +8,7 @@ namespace TabletopCardCompanion
     {
         // Note: Attribute unecessary, but not harmful.
         //       Derived attribute overrides base attribute.
-        [MessageRpc(ClientSidePrediction = true)]
+        [MessageRpc(ClientSidePrediction = false)]
         public override void FlipOver()
         {
             DebugStreamer.AddMessage("Derived: FlipOver");
@@ -23,15 +23,14 @@ namespace TabletopCardCompanion
         [Command]
         private void CmdDoIt()
         {
-            DebugStreamer.AddMessage("In Command: " + this + " " + this.GetHashCode());
+            DebugStreamer.AddMessage("In Command: " + this + " " + GetHashCode());
         }
 
         private void Start()
         {
-            //            var obj = Utility.FindLocalComponent<Base>(netId);
-            //            DebugStreamer.AddMessage(obj);
+            // Unity manages to call [Command] on the exact script instance.
+            // I have two of these scripts attached to the same game object, and both trigger with a different hashcode.
             CmdDoIt();
-            var x = new NetworkHash128();
         }
     }
 }
