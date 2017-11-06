@@ -15,6 +15,11 @@
         Rotate,
         Scale,
 
+        // Base / Derived
+        BaseFlip,
+        BaseScale,
+        BaseRotate,
+
         /// <summary>
         /// The highest value of TabletopCardCompanion message ids. Imported assets must be above this value.
         /// </summary>
