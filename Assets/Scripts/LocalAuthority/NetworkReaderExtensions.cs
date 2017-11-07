@@ -13,7 +13,7 @@ namespace LocalAuthority
         public static object Read(this NetworkReader reader, Type type)
         {
             Func<NetworkReader, object> read;
-            if (@switch.TryGetValue(type, out read))
+            if (OverloadedReadMethods.TryGetValue(type, out read))
             {
                 return read(reader);
             }
@@ -25,21 +25,10 @@ namespace LocalAuthority
         }
 
         /// <summary>
-        /// A switch statement on Type.
-        /// <para>
-        /// <code>
-        /// switch (type)
-        /// {
-        ///     case(typeof(int)):
-        ///         reader.ReadInt32();
-        ///         break;
-        ///     ...
-        /// }
-        /// </code>
-        /// </para>
+        /// Mapping from an object's Type to the correct overloaded <see cref="NetworkReader"/> read method.
         /// </summary>
-        private static readonly Dictionary<Type, Func<NetworkReader, object>> @switch =
-            new Dictionary<Type, Func<NetworkReader, object>>
+        private static readonly Dictionary<Type, Func<NetworkReader, object>> OverloadedReadMethods =
+                            new Dictionary<Type, Func<NetworkReader, object>>
             {
                 {typeof(NetworkInstanceId), (reader) => reader.ReadNetworkId()},
                 {typeof(NetworkSceneId),    (reader) => reader.ReadSceneId()},

@@ -1,22 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using UnityEngine.Networking;
 
 namespace LocalAuthority
 {
-    /// <summary>
-    /// The callback delegate used for message-based command/rpc methods.
-    /// </summary>
-    public delegate void MessageCallback(NetworkMessage netMsg, VarArgsNetIdMessasge msg);
-
     /// <summary>
     /// Static class for creating message-based command/rpc callbacks.
     /// </summary>
     public static class Registration
     {
         /// <summary>
-        /// Use reflection to register methods marked with the <see cref="MessageCommand"/> or <see cref="MessageRpc"/> attribute.
+        /// Create and register callbacks for methods marked with the <see cref="MessageBasedCallback"/> attribute in the specified class.
         /// </summary>
         public static void RegisterCommands(Type classType)
         {
@@ -29,14 +23,14 @@ namespace LocalAuthority
                 if (attribute != null)
                 {
                     var hash = GetCallbackHashcode(classType, method.Name);
-                    CacheParameterTypeList(hash, method);
-
                     var callback = attribute.GetCallback(method, classType);
+
                     Callbacks.Add(hash, callback);
+                    CacheParameterTypeList(hash, method);
 
                     if (attribute.ClientSidePrediction)
                     {
-                        RegisterPredictedRpc(hash, method);
+                        CachePredictedCallback(hash, method);
                     }
 
                     AlreadyRegistered.Add(classType);
@@ -45,7 +39,7 @@ namespace LocalAuthority
         }
 
         /// <summary>
-        /// Return the hashcode for the callback specified by the class and method.
+        /// Return a hashcode created from the class type and method name.
         /// </summary>
         public static int GetCallbackHashcode(Type classType, string methodName)
         {
@@ -79,18 +73,18 @@ namespace LocalAuthority
         }
 
         /// <summary>
-        /// Store methods which have client-side prediction enabled.
+        /// Record methods which have client-side prediction enabled.
         /// </summary>
-        internal static void RegisterPredictedRpc(int callbackHashcode, MethodInfo method)
+        private static void CachePredictedCallback(int callbackHashcode, MethodInfo method)
         {
-            if (!ClientSidePrediction.ContainsKey(callbackHashcode))
+            if (!PredictedCallbacks.ContainsKey(callbackHashcode))
             {
-                ClientSidePrediction.Add(callbackHashcode, method);
+                PredictedCallbacks.Add(callbackHashcode, method);
             }
         }
 
         /// <summary>
-        /// Return the concatenation of "namespace" + "class" + "method".
+        /// Return a concatenation of "namespace" + "class" + "method".
         /// </summary>
         private static string GetFullyQualifiedMethodName(Type classType, string methodName)
         {
@@ -128,7 +122,7 @@ namespace LocalAuthority
         /// <summary>
         /// Mapping from callback hashcode to callback.
         /// </summary>
-        internal static Dictionary<int, MessageCallback> Callbacks = new Dictionary<int, MessageCallback>();
+        internal static readonly Dictionary<int, MessageCallback> Callbacks = new Dictionary<int, MessageCallback>();
 
         /// <summary>
         /// Mapping from callback hashcode to a list of Types for the callback's parameters.
@@ -138,12 +132,12 @@ namespace LocalAuthority
         /// <summary>
         /// Mapping from callback hashcode to method info for methods with client-side prediction enabled.
         /// </summary>
-        internal static readonly Dictionary<int, MethodInfo> ClientSidePrediction = new Dictionary<int, MethodInfo>();
+        internal static readonly Dictionary<int, MethodInfo> PredictedCallbacks = new Dictionary<int, MethodInfo>();
 
         /// <summary>
         /// Classes that have already had their callbacks created.
         /// </summary>
-        internal static readonly HashSet<Type> AlreadyRegistered = new HashSet<Type>();
+        private static readonly HashSet<Type> AlreadyRegistered = new HashSet<Type>();
 
         #endregion
     }

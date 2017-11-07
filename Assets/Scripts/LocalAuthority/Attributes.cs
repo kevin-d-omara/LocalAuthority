@@ -7,46 +7,45 @@ using UnityEngine.Networking;
 namespace LocalAuthority
 {
     /// <summary>
+    /// The callback delegate used for message-based command/rpc methods.
+    /// </summary>
+    public delegate void MessageCallback(NetworkMessage netMsg, VarArgsNetIdMessasge msg);
+
+    /// <summary>
     /// This is an attribute that can be put on methods of a <see cref="LocalAuthorityBehaviour"/> class to allow them
     /// to be invoked on the server or clients by sending a message from a client.
     /// <para>
-    /// [MessageBasedCallback] functions may be invoked from any LocalAuthorityBehaviour, even those not attached to the
-    /// player GameObject. Invoke with <see cref="LocalAuthorityBehaviour.InvokeCommand"/> or <see cref="LocalAuthorityBehaviour.InvokeRpc"/>.
+    /// [MessageBasedCallback] methods may be invoked from any LocalAuthorityBehaviour, even those not attached to the
+    /// player GameObject. Invoke with <see cref="LocalAuthorityBehaviour.InvokeCommand"/> or <see cref="LocalAuthorityBehaviour.SendRpc"/>.
     /// </para>
     /// <para>
-    /// Client-side prediction is supported and may be enabled by adding ClientSidePrediction = true in the attribute constructor.
+    /// Client-side prediction may be enabled by adding ClientSidePrediction = true in the attribute constructor.
+    /// If enabled, the attributed method will be run immediately on the caller and the caller will not be "called back" by the server.
     /// </para>
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public abstract class MessageBasedCallback : Attribute
     {
-        // Data ----------------------------------------------------------------
-
         /// <summary>
         /// True if client-side prediction is enabled. The attributed method will be run immediately on the caller.
         /// </summary>
         public bool ClientSidePrediction { get; set; }
 
-
-        // Methods -------------------------------------------------------------
-
-        /// <summary>
-        /// Register a message-based callback on the server and clients.
-        /// </summary>
-        /// <param name="classType">Type of script where the method code is written.</param>
-        public MessageCallback GetCallback(MethodInfo method, Type classType)
-        {
-            // Same number, order, and type as parameters to GetCallback2<TMsg, TComp>().
-            var args = new object[] { method };
-
-            // Call GetCallback2<TComp> with correct generic type.
-            var registerMessage = CachedInfo.MakeGenericMethod(classType);
-            return (MessageCallback) registerMessage.Invoke(this, args);
-        }
-
         /// <summary>
         /// Return a callback that behaves like a <see cref="CommandAttribute"/> or <see cref="ClientRpcAttribute"/>.
         /// </summary>
+        /// <param name="method">The method to create a callback for.</param>
+        /// <param name="classType">The class where the method is defined.</param>
+        public MessageCallback GetCallback(MethodInfo method, Type classType)
+        {
+            // Same number, order, and type as parameters to GetCallback<TMsg, TComp>().
+            var args = new object[] { method };
+
+            // Call GetCallback<TComp> with correct generic type.
+            var registerMessage = CachedMethodInfo.MakeGenericMethod(classType);
+            return (MessageCallback) registerMessage.Invoke(this, args);
+        }
+
         protected abstract MessageCallback GetCallback<TComp>(MethodInfo callback)
             where TComp : LocalAuthorityBehaviour;
 
@@ -56,30 +55,25 @@ namespace LocalAuthority
         /// <summary>
         /// Cached MethodInfo for <see cref="GetCallback{TComp}"/>.
         /// </summary>
-        private static MethodInfo CachedInfo { get; }
+        private static MethodInfo CachedMethodInfo { get; }
 
         static MessageBasedCallback()
         {
+            // Cache method info for GetCallback<TComp>().
             var parameterTypes = new Type[] { typeof(MethodInfo) };
             var flags = BindingFlags.Instance | BindingFlags.NonPublic;
             var info = typeof(MessageBasedCallback).GetMethod(nameof(GetCallback), flags, null, parameterTypes, null);
-            CachedInfo = info;
+            CachedMethodInfo = info;
         }
     }
 
-
-
     /// <summary>
     /// The attributed method will behave like a <see cref="CommandAttribute"/>.
-    /// Invoke with <see cref="LocalAuthorityBehaviour.InvokeCommand"/>.
+    /// When invoked with <see cref="LocalAuthorityBehaviour.InvokeCommand"/>, it will run only on the server.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public class MessageCommand : MessageBasedCallback
     {
-        /// <summary>
-        /// Return a callback that behaves like a [Command].
-        /// When invoked with <see cref="LocalAuthorityBehaviour.InvokeCommand"/>, it will run only on the server.
-        /// </summary>
         protected override MessageCallback GetCallback<TComp>(MethodInfo callback)
         {
             return (netMsg, msg) =>
@@ -96,45 +90,28 @@ namespace LocalAuthority
         }
     }
 
-
-
     /// <summary>
     /// The attributed method will behave like a <see cref="ClientRpcAttribute"/>.
-    /// Invoke with <see cref="LocalAuthorityBehaviour.InvokeRpc"/>.
+    /// When invoked with <see cref="LocalAuthorityBehaviour.SendRpc"/>, it will run on all clients.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public class MessageRpc : MessageBasedCallback
     {
-        /// <summary>
-        /// Return a callback that behaves like a [ClientRpc].
-        /// When invoked with <see cref="LocalAuthorityBehaviour.InvokeRpc"/>, it will run on all clients.
-        /// </summary>
         protected override MessageCallback GetCallback<TComp>(MethodInfo callback)
         {
             return (netMsg, msg) =>
             {
                 var obj = LocalAuthorityBehaviour.FindLocalComponent<TComp>(msg.netId);
-                Action rpc = () => callback.Invoke(obj, msg.args);
-                InvokeRpcOnClients(obj, rpc, netMsg, msg);
+
+                if (obj.isServer)
+                {
+                    ForwardMessage(netMsg, msg);
+
+                    if (ClientSidePrediction && NetworkServer.localConnections.Contains(netMsg.conn)) return;
+                }
+
+                callback.Invoke(obj, msg.args);
             };
-        }
-
-        /// <summary>
-        /// Run the action on all clients except for the host and optionally the caller.
-        /// </summary>
-        /// <param name="action">The action to run on the clients.</param>
-        /// <param name="netMsg">The network message passed in to the registered callback.</param>
-        /// <param name="msg">The message to forward.</param>
-        private void InvokeRpcOnClients(LocalAuthorityBehaviour obj, Action action, NetworkMessage netMsg, MessageBase msg)
-        {
-            if (obj.isServer)
-            {
-                ForwardMessage(netMsg, msg);
-
-                if (ClientSidePrediction && NetworkServer.localConnections.Contains(netMsg.conn)) return;
-            }
-
-            action();
         }
 
         /// <summary>

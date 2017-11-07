@@ -12,11 +12,9 @@ namespace LocalAuthority.Components
     ///           // execute your code over as many frames as you'd like
     ///     - call <see cref="ReleaseOwnership"/>
     /// </para>
-    /// <para>
-    /// For an example of use, <see cref="NetworkPosition"/>.
-    /// </para>
+    /// <para>For an example of use, see <see cref="NetworkPosition"/>.</para>
+    /// <para>The Player prefab must have <see cref="LocalAuthorityPlayer"/> attached for this to work.</para>
     /// </summary>
-    /// <remarks>The Player prefab must have <see cref="LocalAuthorityPlayer"/> attached for this to work.</remarks>
     public class Ownership : LocalAuthorityBehaviour
     {
         /// <summary>
@@ -53,7 +51,7 @@ namespace LocalAuthority.Components
         /// </summary>
         public void RequestOwnership()
         {
-            InvokeCommand(nameof(CmdRequestOwnership), LocalPlayer.netId);
+            SendCallback(nameof(CmdRequestOwnership), LocalPlayer.netId);
         }
 
         /// <summary>
@@ -61,7 +59,7 @@ namespace LocalAuthority.Components
         /// </summary>
         public void ReleaseOwnership()
         {
-            InvokeCommand(nameof(CmdReleaseOwnership), LocalPlayer.netId);
+            SendCallback(nameof(CmdReleaseOwnership), LocalPlayer.netId);
         }
 
 

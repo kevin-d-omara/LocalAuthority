@@ -53,7 +53,7 @@ namespace LocalAuthority.Components
 
         private void BroadcastCurrentTransform()
         {
-            InvokeCommand(nameof(CmdUpdateTargetSyncPosition), transform.position);
+            SendCallback(nameof(CmdUpdateTargetSyncPosition), transform.position);
         }
 
         [MessageCommand]

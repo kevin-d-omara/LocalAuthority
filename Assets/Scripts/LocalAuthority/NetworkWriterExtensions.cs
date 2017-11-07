@@ -15,7 +15,7 @@ namespace LocalAuthority
             if (obj == null) return;
 
             Action<NetworkWriter, object> write;
-            if (@switch.TryGetValue(obj.GetType(), out write))
+            if (OverloadedWriteMethods.TryGetValue(obj.GetType(), out write))
             {
                 write(writer, obj);
             }
@@ -26,21 +26,10 @@ namespace LocalAuthority
         }
 
         /// <summary>
-        /// A switch statement on Type.
-        /// <para>
-        /// <code>
-        /// switch (value.GetType())
-        /// {
-        ///     case(typeof(int)):
-        ///         writer.write((int) value);
-        ///         break;
-        ///     ...
-        /// }
-        /// </code>
-        /// </para>
+        /// Mapping from an object's Type to the correct overloaded <see cref="NetworkWriter"/> write method.
         /// </summary>
-        private static readonly Dictionary<Type, Action<NetworkWriter, object>> @switch =
-            new Dictionary<Type, Action<NetworkWriter, object>>
+        private static readonly Dictionary<Type, Action<NetworkWriter, object>> OverloadedWriteMethods =
+                            new Dictionary<Type, Action<NetworkWriter, object>>
             {
                 {typeof(NetworkInstanceId), (writer, value) => writer.Write((NetworkInstanceId) value)},
                 {typeof(NetworkSceneId),    (writer, value) => writer.Write((NetworkSceneId) value)},

@@ -13,8 +13,11 @@ Unity built-in networking has a number of drawbacks and limitations:
 - Send a Command or RPC method from **any** game object, not just the player.
   - Decouple your code and improve readability!
   - The server is still authoritative (all Command/RPCs pass through it) so cheating may be prevented.
+- Attribute based, just like UNet. Tack `[MessageRpc]` or `[MessageCommand]` above your method and you're done!
+  - Invoke it with `SendCallback(nameof(MyMethod))`.
 - Client-side prediction is built-in (and optional), so you can enjoy a responsive, yet server-authoritative,
   game for no extra work!
+  - Enable it in the attribute: `[MessageRpc(ClientSidePrediction = true)]` or `[MessageCommand(ClientSidePrediction = true)]`.
 - Command and RPCs are treated the same, except RPCs also execute on clients. There's no more need to wrap
   RPC calls in a Command.
 
@@ -32,12 +35,12 @@ public class CardController : LocalAuthorityBehaviour
     {
         if (Input.GetButtonDown("Jump")
         {
-            InvokeRpc(nameof(FlipOver));
+            SendCallback(nameof(RpcFlipOver));
         }
     }
 
-    [MessageRpc((short)MsgType.FlipOver, ClientSidePrediction = true)]
-    public void FlipOver()
+    [MessageRpc(ClientSidePrediction = true)]
+    public void RpcFlipOver()
     {
         currentImage = currentImage == frontImage ? backImage : frontImage;
         GetComponent<SpriteRenderer>().sprite = currentImage;

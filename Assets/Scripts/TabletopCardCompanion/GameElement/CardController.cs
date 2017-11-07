@@ -13,7 +13,7 @@ namespace TabletopCardCompanion.GameElement
         {
             if (Input.GetButtonDown(AxisName.ToggleColor))
             {
-                InvokeRpc(nameof(RpcToggleColor));
+                SendCallback(nameof(RpcToggleColor));
             }
 
             if (Input.GetButtonDown(AxisName.Rotate))
@@ -21,7 +21,7 @@ namespace TabletopCardCompanion.GameElement
                 var direction = Input.GetAxis("Rotate") > 0 ? 1 : -1;
                 var degrees = 60 * direction;
 
-                InvokeRpc(nameof(RpcRotate), degrees);
+                SendCallback(nameof(RpcRotate), degrees);
             }
 
             if (Input.GetButtonDown(AxisName.Scale))
@@ -29,7 +29,7 @@ namespace TabletopCardCompanion.GameElement
                 var direction = Input.GetAxis("Scale") > 0 ? 1 : -1;
                 var percent = 0.1f * direction;
 
-                InvokeRpc(nameof(RpcScale), percent);
+                SendCallback(nameof(RpcScale), percent);
             }
         }
 

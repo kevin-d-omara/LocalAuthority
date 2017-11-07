@@ -29,7 +29,7 @@ namespace TabletopCardCompanion
         {
             if (Input.GetButtonDown(AxisName.ToggleColor))
             {
-                InvokeRpc(nameof(FlipOver));
+                SendCallback(nameof(FlipOver));
             }
 
             if (Input.GetButtonDown(AxisName.Rotate))
@@ -37,7 +37,7 @@ namespace TabletopCardCompanion
                 var direction = Input.GetAxis("Rotate") > 0 ? 1 : -1;
                 var degrees = 60 * direction;
 
-                InvokeRpc(nameof(Rotate), degrees);
+                SendCallback(nameof(Rotate), degrees);
             }
 
             if (Input.GetButtonDown(AxisName.Scale))
@@ -45,7 +45,7 @@ namespace TabletopCardCompanion
                 var direction = Input.GetAxis("Scale") > 0 ? 1 : -1;
                 var percent = 0.1f * direction;
 
-                InvokeRpc(nameof(Scale), percent);
+                SendCallback(nameof(Scale), percent);
             }
         }
     }
