@@ -85,6 +85,12 @@ namespace LocalAuthority
             return (netMsg, msg) =>
             {
                 var obj = LocalAuthorityBehaviour.FindLocalComponent<TComp>(msg.netId);
+
+                if (ClientSidePrediction && obj.isServer && NetworkServer.localConnections.Contains(netMsg.conn))
+                {
+                    return;
+                }
+
                 callback.Invoke(obj, msg.args);
             };
         }
