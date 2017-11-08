@@ -23,8 +23,9 @@ namespace TabletopCardCompanion.GameElement
 
             if (Input.GetButtonDown(AxisName.Rotate))
             {
-                var direction = Input.GetAxis("Rotate") > 0 ? 1 : -1;
-                var degrees = 60 * direction;
+                // Positive rotation is counter-clockwise when looking at the screen.
+                var direction = Input.GetAxis("Rotate") > 0 ? -1 : 1;
+                var degrees = DEGREES_PER_ACTION * direction;
 
                 SendCallback(nameof(RpcRotate), degrees);
             }
@@ -78,12 +79,16 @@ namespace TabletopCardCompanion.GameElement
         [MessageRpc(ClientSidePrediction = true)]
         private void RpcFlipOver()
         {
-            FlipOverTo(!isShowingFront);
+            isShowingFront = !isShowingFront;
+            isChangingSides = true;
+            DebugStreamer.AddMessage("FlipOver");
         }
 
         [MessageRpc(ClientSidePrediction = true)]
         private void RpcRotate(int degrees)
         {
+            targetRotateAngle += degrees;
+            isRotating = true;
             DebugStreamer.AddMessage("Rotate");
         }
 
@@ -95,12 +100,6 @@ namespace TabletopCardCompanion.GameElement
 
 
         // Update Model and View -----------------------------------------------
-
-        private void FlipOverTo(bool toFrontSide)
-        {
-            isShowingFront = toFrontSide;
-            isChangingSides = true;
-        }
 
         private void Update()
         {
@@ -114,7 +113,9 @@ namespace TabletopCardCompanion.GameElement
                 // Rotate.
                 dtLerp += (isShowingFront ? Time.deltaTime : -Time.deltaTime) * 1f / LERP_TIME;
                 var newAngle = Mathf.LerpAngle(BACK_ANGLE, FRONT_ANGLE, dtLerp);
-                transform.eulerAngles = new Vector3(0, newAngle, 0);
+                var deltaAngle = newAngle - abstractEuler.y;
+                transform.RotateAround(transform.position, transform.up, deltaAngle);
+                abstractEuler.y = newAngle;
 
                 // When 90 degrees is crossed, change the sprite.
                 if (isShowingFront && newAngle >= -90f)
@@ -131,29 +132,58 @@ namespace TabletopCardCompanion.GameElement
                 }
 
                 // Stop lerping.
-                if (dtLerp <= BACK_TIME || dtLerp >= FRONT_TIME)
+                if (dtLerp <= 0f || dtLerp >= 1f)
                 {
                     isChangingSides = false;
-                    dtLerp = isShowingFront ? FRONT_TIME : BACK_TIME;
+                    dtLerp = isShowingFront ? 1f : 0f;
                 }
+            }
+
+            // Rotate with a fixed velocity (degrees per second).
+            if (isRotating)
+            {
+                var currentAngle = abstractEuler.z;
+                var newAngle = Mathf.MoveTowards(currentAngle, targetRotateAngle, ROTATE_SPEED * Time.deltaTime);
+                var deltaAngle = newAngle - currentAngle;
+                abstractEuler.z = newAngle;
+
+                var distToTarget = Mathf.Abs(targetRotateAngle - currentAngle);
+                var distToNew    = Mathf.Abs(newAngle - currentAngle);
+                if (distToNew > distToTarget)
+                {
+                    deltaAngle = targetRotateAngle - currentAngle;
+                    isRotating = false;
+                    abstractEuler.z = targetRotateAngle;
+                }
+                transform.RotateAround(transform.position, Vector3.forward, deltaAngle);
             }
         }
 
         // Model ---------------------------------------------------------------
 
+        // For tracking rotations along each axis independent of each other.
+        private Vector3 abstractEuler;
+
+        // Two-Sided Sprite / Flip Over
         [SerializeField] private Sprite frontSide;
-        [SerializeField] public Sprite backSide;
+        [SerializeField] private Sprite backSide;
 
         [SyncVar]
-        [SerializeField] public bool isShowingFront = true;
+        [SerializeField] private bool isShowingFront = true;
 
         private bool isChangingSides;
         private float dtLerp;
         private const float FRONT_ANGLE = 0f;
         private const float BACK_ANGLE = -180f;
-        private const float FRONT_TIME = 1f;
-        private const float BACK_TIME = 0f;
         private const float LERP_TIME = .75f;
+
+        // Rotation
+        [SyncVar]
+        private float targetRotateAngle;
+
+        private bool isRotating;
+        private const float ROTATE_SPEED = 120; // degrees per second
+        private const int DEGREES_PER_ACTION = 45;
 
 
         // Initialization ------------------------------------------------------
@@ -172,6 +202,13 @@ namespace TabletopCardCompanion.GameElement
             spriteRenderer = GetComponent<SpriteRenderer>();
         }
 
+        public override void OnStartServer()
+        {
+            base.OnStartServer();
+
+            targetRotateAngle = transform.eulerAngles.z;
+        }
+
         public override void OnStartClient()
         {
             base.OnStartClient();
@@ -181,18 +218,58 @@ namespace TabletopCardCompanion.GameElement
             {
                 spriteRenderer.sprite = frontSide;
                 spriteRenderer.flipX = false;
-                transform.eulerAngles = new Vector3(0f, FRONT_ANGLE, 0f);
-                dtLerp = FRONT_TIME;
+                dtLerp = 1f;
             }
             else
             {
                 spriteRenderer.sprite = backSide;
                 spriteRenderer.flipX = true;
-                transform.eulerAngles = new Vector3(0f, BACK_ANGLE, 0f);
-                dtLerp = BACK_TIME;
+                dtLerp = 0f;
             }
             boxCollider.size = spriteRenderer.sprite.bounds.size;
+
+            // Show correct rotation, without lerping to it.
+            abstractEuler.x = transform.eulerAngles.x;
+            abstractEuler.y = isShowingFront ? FRONT_ANGLE : BACK_ANGLE;
+            abstractEuler.z = targetRotateAngle;
+            transform.RotateAround(transform.position, transform.up, abstractEuler.y);
+            transform.RotateAround(transform.position, Vector3.forward, abstractEuler.z);
         }
+
+
+        // Serialization -------------------------------------------------------
+
+        // This is an optimization to minimize network bandwidth. SyncVars are only being used to make sure late-joining
+        // clients are up-to-date. These OnSerialize/OnDeserialize methods *only* read/write data for the initial state.
+
+//        /// <summary>
+//        /// Only send SyncVars when a new client joins or the object is first created.
+//        /// </summary>
+//        public override bool OnSerialize(NetworkWriter writer, bool initialState)
+//        {
+//            if (initialState)
+//            {
+//                // SyncVars
+//                writer.Write(isShowingFront);
+//                writer.Write(targetRotateAngle);
+//                return true;
+//            }
+//
+//            return false;
+//        }
+//
+//        /// <summary>
+//        /// Only overwrite SyncVars when a new client joins or the object is first created.
+//        /// </summary>
+//        public override void OnDeserialize(NetworkReader reader, bool initialState)
+//        {
+//            if (initialState)
+//            {
+//                // SyncVars
+//                isShowingFront = reader.ReadBoolean();
+//                targetRotateAngle = reader.ReadSingle();
+//            }
+//        }
 
 
         // Editor --------------------------------------------------------------
