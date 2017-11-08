@@ -63,6 +63,9 @@ namespace TabletopCardCompanion.GameElement
 
         // Serialization -------------------------------------------------------
 
+        // This is an optimization to minimize network bandwidth. SyncVars are only being used to make sure late-joining
+        // clients are up-to-date. These OnSerialize/OnDeserialize methods *only* read/write data for the initial state.
+
         /// <summary>
         /// Only send SyncVars when a new client joins or the object is first created.
         /// </summary>

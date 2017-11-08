@@ -9,5 +9,8 @@ EditorBuildSettings:
     path: Assets/Scenes/Offline.unity
     guid: 8aae5decf2d44fd4a8266abf8f150f3a
   - enabled: 1
-    path: Assets/Scenes/Online.unity
+    path: Assets/Scenes/Online - Cards.unity
+    guid: 74a3cc04c280c6e43be18699175f10f1
+  - enabled: 1
+    path: Assets/Scenes/Online - Boxes.unity
     guid: 700138a9ac7e3a94ab22d46d1eec2e7a
