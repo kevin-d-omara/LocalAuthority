@@ -78,7 +78,7 @@ namespace TabletopCardCompanion.GameElement
         [MessageRpc(ClientSidePrediction = true)]
         private void RpcFlipOver()
         {
-            OnFlipOver(!isShowingFront);
+            FlipOverTo(!isShowingFront);
         }
 
         [MessageRpc(ClientSidePrediction = true)]
@@ -96,13 +96,47 @@ namespace TabletopCardCompanion.GameElement
 
         // Update Model and View -----------------------------------------------
 
-        private void OnFlipOver(bool newValue)
+        private void FlipOverTo(bool toFrontSide)
         {
-            isShowingFront = newValue;
-            spriteRenderer.sprite = isShowingFront ? frontSide : backSide;
+            isShowingFront = toFrontSide;
+            isChangingSides = true;
+        }
 
-            // Update box collider width/height.
-            boxCollider.size = spriteRenderer.sprite.bounds.size;
+        private void Update()
+        {
+            // Flipping over the card looks like:
+            // Back                    Front
+            //   |<----------|---------->|
+            // -180°       -90°          0°
+            // 0 sec                   1 sec
+            if (isChangingSides)
+            {
+                // Rotate.
+                dtLerp += (isShowingFront ? Time.deltaTime : -Time.deltaTime) * 1f / LERP_TIME;
+                var newAngle = Mathf.LerpAngle(BACK_ANGLE, FRONT_ANGLE, dtLerp);
+                transform.eulerAngles = new Vector3(0, newAngle, 0);
+
+                // When 90 degrees is crossed, change the sprite.
+                if (isShowingFront && newAngle >= -90f)
+                {
+                    spriteRenderer.sprite = frontSide;
+                    spriteRenderer.flipX = false;
+                    boxCollider.size = spriteRenderer.sprite.bounds.size;
+                }
+                else if (!isShowingFront && newAngle <= -90f)
+                {
+                    spriteRenderer.sprite = backSide;
+                    spriteRenderer.flipX = true;
+                    boxCollider.size = spriteRenderer.sprite.bounds.size;
+                }
+
+                // Stop lerping.
+                if (dtLerp <= BACK_TIME || dtLerp >= FRONT_TIME)
+                {
+                    isChangingSides = false;
+                    dtLerp = isShowingFront ? FRONT_TIME : BACK_TIME;
+                }
+            }
         }
 
         // Model ---------------------------------------------------------------
@@ -112,6 +146,14 @@ namespace TabletopCardCompanion.GameElement
 
         [SyncVar]
         [SerializeField] public bool isShowingFront = true;
+
+        private bool isChangingSides;
+        private float dtLerp;
+        private const float FRONT_ANGLE = 0f;
+        private const float BACK_ANGLE = -180f;
+        private const float FRONT_TIME = 1f;
+        private const float BACK_TIME = 0f;
+        private const float LERP_TIME = .75f;
 
 
         // Initialization ------------------------------------------------------
@@ -134,7 +176,22 @@ namespace TabletopCardCompanion.GameElement
         {
             base.OnStartClient();
 
-            OnFlipOver(isShowingFront);
+            // Show correct side, without lerping to it.
+            if (isShowingFront)
+            {
+                spriteRenderer.sprite = frontSide;
+                spriteRenderer.flipX = false;
+                transform.eulerAngles = new Vector3(0f, FRONT_ANGLE, 0f);
+                dtLerp = FRONT_TIME;
+            }
+            else
+            {
+                spriteRenderer.sprite = backSide;
+                spriteRenderer.flipX = true;
+                transform.eulerAngles = new Vector3(0f, BACK_ANGLE, 0f);
+                dtLerp = BACK_TIME;
+            }
+            boxCollider.size = spriteRenderer.sprite.bounds.size;
         }
 
 
@@ -145,13 +202,16 @@ namespace TabletopCardCompanion.GameElement
             if (frontSide == null || backSide == null)
                 return;
 
+            // Get components.
+            spriteRenderer = GetComponent<SpriteRenderer>();
+            boxCollider = GetComponent<BoxCollider2D>();
+
             // Display correct sprite.
-            var renderer = GetComponent<SpriteRenderer>();
-            renderer.sprite = isShowingFront ? frontSide : backSide;
+            // Note: simplified from runtime logic. Not flipping x-dir or rotating.
+            spriteRenderer.sprite = isShowingFront ? frontSide : backSide;
 
             // Match box collider width/height to sprite.
-            var collider = GetComponent<BoxCollider2D>();
-            collider.size = renderer.sprite.bounds.size;
+            boxCollider.size = spriteRenderer.sprite.bounds.size;
         }
     }
 }
