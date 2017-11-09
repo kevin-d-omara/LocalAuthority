@@ -125,7 +125,7 @@ namespace LocalAuthority
 
             foreach (var conn in NetworkServer.connections)
             {
-                if (!ignoreList.Contains(conn))
+                if (conn != null && !ignoreList.Contains(conn))
                 {
                     conn.Send(netMsg.msgType, msg);
                 }
