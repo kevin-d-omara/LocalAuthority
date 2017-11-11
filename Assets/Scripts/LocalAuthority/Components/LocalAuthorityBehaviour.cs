@@ -24,7 +24,7 @@ namespace LocalAuthority.Components
         /// <param name="values">An argument list for the method. Contains objects with the same number, order, and type
         /// as the parameters of the method. Omit this if the method has no parameters.</param>
         /// <returns>True if the callback was sent.</returns>
-        protected bool SendCallback(string methodName, params object[] values)
+        public bool SendCallback(string methodName, params object[] values)
         {
             var hash = Registration.GetCallbackHashcode(GetType(), methodName);
             var msg = new VarArgsNetIdMessasge(netId, hash, values);

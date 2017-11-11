@@ -333,7 +333,7 @@ Prefab:
         type: 2}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: 68ea0a14d6f33e3478afce144b2ee333,
+      objectReference: {fileID: 21300000, guid: 00db36e855669c346b2c6cfe26491472,
         type: 3}
     - target: {fileID: 114215510027634840, guid: 83486de3e63e63646bdadd0098935120,
         type: 2}
@@ -359,6 +359,23 @@ Prefab:
     - target: {fileID: 1980375676536174, guid: 83486de3e63e63646bdadd0098935120, type: 2}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114588011122664502, guid: 83486de3e63e63646bdadd0098935120,
+        type: 2}
+      propertyPath: frontSide
+      value: 
+      objectReference: {fileID: 21300000, guid: 68ea0a14d6f33e3478afce144b2ee333,
+        type: 3}
+    - target: {fileID: 114588011122664502, guid: 83486de3e63e63646bdadd0098935120,
+        type: 2}
+      propertyPath: backSide
+      value: 
+      objectReference: {fileID: 21300000, guid: 00db36e855669c346b2c6cfe26491472,
+        type: 3}
+    - target: {fileID: 114588011122664502, guid: 83486de3e63e63646bdadd0098935120,
+        type: 2}
+      propertyPath: isShowingFront
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 83486de3e63e63646bdadd0098935120, type: 2}
@@ -457,6 +474,18 @@ Prefab:
       propertyPath: m_Name
       value: Card - Spawn 144
       objectReference: {fileID: 0}
+    - target: {fileID: 114588011122664502, guid: 83486de3e63e63646bdadd0098935120,
+        type: 2}
+      propertyPath: frontSide
+      value: 
+      objectReference: {fileID: 21300000, guid: 035face38b7389e4883cca9b8e4cd155,
+        type: 3}
+    - target: {fileID: 114588011122664502, guid: 83486de3e63e63646bdadd0098935120,
+        type: 2}
+      propertyPath: backSide
+      value: 
+      objectReference: {fileID: 21300000, guid: 99ec758da17487c47b7c9566074a1285,
+        type: 3}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 83486de3e63e63646bdadd0098935120, type: 2}
   m_IsPrefabParent: 0
@@ -558,6 +587,23 @@ Prefab:
         type: 2}
       propertyPath: m_FlipX
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114588011122664502, guid: 83486de3e63e63646bdadd0098935120,
+        type: 2}
+      propertyPath: frontSide
+      value: 
+      objectReference: {fileID: 21300000, guid: 767ae6019c20ee944bd5f1b54df79195,
+        type: 3}
+    - target: {fileID: 114588011122664502, guid: 83486de3e63e63646bdadd0098935120,
+        type: 2}
+      propertyPath: backSide
+      value: 
+      objectReference: {fileID: 21300000, guid: 00db36e855669c346b2c6cfe26491472,
+        type: 3}
+    - target: {fileID: 114588011122664502, guid: 83486de3e63e63646bdadd0098935120,
+        type: 2}
+      propertyPath: isShowingFront
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 83486de3e63e63646bdadd0098935120, type: 2}
