@@ -56,12 +56,7 @@ namespace TabletopCardCompanion.Components
 
         // Serialization -------------------------------------------------------
 
-        // SyncVars are only being used to make sure late-joining clients are up-to-date.
-        // These OnSerialize/OnDeserialize methods only read/write data for the *initial* state.
-
-        /// <summary>
-        /// Only send SyncVars when a new client joins or the object is first created.
-        /// </summary>
+        // SyncVars are only sent to each client once, when they join the game.
         public override bool OnSerialize(NetworkWriter writer, bool initialState)
         {
             if (initialState)
@@ -74,9 +69,7 @@ namespace TabletopCardCompanion.Components
             return false;
         }
 
-        /// <summary>
-        /// Only overwrite SyncVars when a new client joins or the object is first created.
-        /// </summary>
+        // SyncVars are only read once, when the client joins the game.
         public override void OnDeserialize(NetworkReader reader, bool initialState)
         {
             if (initialState)

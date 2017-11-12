@@ -140,6 +140,31 @@ namespace TabletopCardCompanion.Components
         }
 
 
+        // Serialization -------------------------------------------------------
+
+        // SyncVars are only sent to each client once, when they join the game.
+        public override bool OnSerialize(NetworkWriter writer, bool initialState)
+        {
+            if (initialState)
+            {
+                // SyncVars
+                writer.Write(isShowingFront);
+                return true;
+            }
+
+            return false;
+        }
+
+        // SyncVars are only read once, when the client joins the game.
+        public override void OnDeserialize(NetworkReader reader, bool initialState)
+        {
+            if (initialState)
+            {
+                // SyncVars
+                isShowingFront = reader.ReadBoolean();
+            }
+        }
+
         // Editor --------------------------------------------------------------
 
         private void OnValidate()
