@@ -107,8 +107,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90a219082ea8a804985a174465b80a81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  snapThreshold: 100
   networkSendRate: 9
-  snapThreshold: 5
 --- !u!114 &114588011122664502
 MonoBehaviour:
   m_ObjectHideFlags: 1
