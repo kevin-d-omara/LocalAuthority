@@ -79,6 +79,7 @@ namespace LocalAuthority
             return (netMsg, msg) =>
             {
                 var obj = LocalAuthorityBehaviour.FindLocalComponent<TComp>(msg.netId);
+                if (obj == null) return;
 
                 if (ClientSidePrediction && obj.isServer && NetworkServer.localConnections.Contains(netMsg.conn))
                 {
@@ -102,6 +103,7 @@ namespace LocalAuthority
             return (netMsg, msg) =>
             {
                 var obj = LocalAuthorityBehaviour.FindLocalComponent<TComp>(msg.netId);
+                if (obj == null) return;
 
                 if (obj.isServer)
                 {

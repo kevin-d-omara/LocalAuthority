@@ -43,26 +43,17 @@ namespace LocalAuthority.Components
         /// Find a component of type <c>TComp</c> attached to a game object with the given network id.
         /// </summary>
         /// <returns>
-        /// The component attached to the game object with matching netId.
-        /// Throws a fatal error and returns default(T) if the object or component are not found.
+        /// The component attached to the game object, or null if no game object or component are found.
         /// </returns>
-        public static TComp FindLocalComponent<TComp>(NetworkInstanceId netId)
+        public static TComp FindLocalComponent<TComp>(NetworkInstanceId netId) where TComp : MonoBehaviour
         {
             var foundObject = ClientScene.FindLocalObject(netId);
             if (foundObject == null)
             {
-                if (LogFilter.logError) { Debug.LogError("No GameObject exists for the given NetworkInstanceId: " + netId); }
-                return default(TComp);
+                return null;
             }
 
-            var foundComponent = foundObject.GetComponent<TComp>();
-            if (foundComponent == null)
-            {
-                if (LogFilter.logError) { Debug.LogError("The GameObject " + foundObject + " does not have a " + typeof(TComp) + " component attached."); }
-                return default(TComp);
-            }
-
-            return foundComponent;
+            return foundObject.GetComponent<TComp>();
         }
 
         protected virtual void Awake()

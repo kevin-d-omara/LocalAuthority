@@ -69,6 +69,7 @@ namespace LocalAuthority.Components
         private void CmdRequestOwnership(NetworkInstanceId requesterNetId)
         {
             var requester = FindLocalComponent<NetworkIdentity>(requesterNetId);
+            if (requester == null) return;
 
             // Prevent players from stealing ownership.
             if (IsOwnedByNone)
@@ -81,6 +82,7 @@ namespace LocalAuthority.Components
         private void CmdReleaseOwnership(NetworkInstanceId requesterNetId)
         {
             var requester = FindLocalComponent<NetworkIdentity>(requesterNetId);
+            if (requester == null) return;
 
             // Prevent players from dropping someone else's ownership.
             if (Owner == requester)

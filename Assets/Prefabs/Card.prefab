@@ -107,8 +107,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90a219082ea8a804985a174465b80a81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  snapThreshold: 100
   networkSendRate: 9
+  snapThreshold: 100
 --- !u!114 &114588011122664502
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -123,7 +123,7 @@ MonoBehaviour:
   frontSide: {fileID: 0}
   backSide: {fileID: 0}
   isShowingFront: 1
-  LerpDuration: 0.75
+  LerpDuration: 0.5
 --- !u!114 &114712383633389626
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -159,7 +159,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DegreesPerAction: 45
-  RotateSpeed: 120
+  RotateSpeed: 280
 --- !u!114 &114959511517563992
 MonoBehaviour:
   m_ObjectHideFlags: 1
