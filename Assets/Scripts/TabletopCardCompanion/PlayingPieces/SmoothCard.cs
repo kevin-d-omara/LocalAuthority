@@ -2,15 +2,21 @@
 using TabletopCardCompanion.Components;
 using UnityEngine;
 
-namespace TabletopCardCompanion.GameElement
+namespace TabletopCardCompanion.PlayingPieces
 {
+    /// <summary>
+    /// Represents a playing card (Poker, Magic the Gathering, Zombicide, etc.).
+    /// <para>
+    /// Uses smoothing and interpolation to keep state changes looking nice.
+    /// </para>
+    /// </summary>
     [RequireComponent(typeof(ClickAndDrag))]
     [RequireComponent(typeof(TwoSidedSprite))]
     [RequireComponent(typeof(Rotate))]
     [RequireComponent(typeof(Scale))]
-    public class Card : LocalAuthorityBehaviour
+    public class SmoothCard : LocalAuthorityBehaviour
     {
-        // Press Button Actions ------------------------------------------------
+        // Keyboard Button Actions ---------------------------------------------
 
         private void OnMouseOver()
         {
@@ -50,40 +56,5 @@ namespace TabletopCardCompanion.GameElement
             rotate = GetComponent<Rotate>();
             scale = GetComponent<Scale>();
         }
-
-
-        // Serialization -------------------------------------------------------
-
-        // This is an optimization to minimize network bandwidth. SyncVars are only being used to make sure late-joining
-        // clients are up-to-date. These OnSerialize/OnDeserialize methods *only* read/write data for the initial state.
-
-//        /// <summary>
-//        /// Only send SyncVars when a new client joins or the object is first created.
-//        /// </summary>
-//        public override bool OnSerialize(NetworkWriter writer, bool initialState)
-//        {
-//            if (initialState)
-//            {
-//                // SyncVars
-//                writer.Write(isShowingFront);
-//                writer.Write(targetRotateAngle);
-//                return true;
-//            }
-//
-//            return false;
-//        }
-//
-//        /// <summary>
-//        /// Only overwrite SyncVars when a new client joins or the object is first created.
-//        /// </summary>
-//        public override void OnDeserialize(NetworkReader reader, bool initialState)
-//        {
-//            if (initialState)
-//            {
-//                // SyncVars
-//                isShowingFront = reader.ReadBoolean();
-//                targetRotateAngle = reader.ReadSingle();
-//            }
-//        }
     }
 }

@@ -3,8 +3,11 @@ using LocalAuthority.Components;
 using TabletopCardCompanion.Debug;
 using UnityEngine;
 
-namespace TabletopCardCompanion
+namespace TabletopCardCompanion.PlayingPieces
 {
+    /// <summary>
+    /// This class exists to demonstrate that <see cref="MessageBasedCallback"/> attributes work properly with inheritance.
+    /// </summary>
     public class Base : LocalAuthorityBehaviour
     {
         [MessageRpc(ClientSidePrediction = true)]

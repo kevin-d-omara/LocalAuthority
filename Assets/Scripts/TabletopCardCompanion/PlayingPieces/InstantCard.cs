@@ -3,8 +3,14 @@ using LocalAuthority.Components;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace TabletopCardCompanion.GameElement
+namespace TabletopCardCompanion.PlayingPieces
 {
+    /// <summary>
+    /// Represents a playing card (Poker, Magic the Gathering, Zombicide, etc.).
+    /// <para>
+    /// Does not use smoothing. Animations and state changes are instant.
+    /// </para>
+    /// </summary>
     [RequireComponent(typeof(Ownership))]
     [RequireComponent(typeof(NetworkPosition))]
     [RequireComponent(typeof(SpriteRenderer))]

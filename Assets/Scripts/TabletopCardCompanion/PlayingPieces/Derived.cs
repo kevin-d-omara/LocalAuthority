@@ -2,24 +2,29 @@
 using TabletopCardCompanion.Debug;
 using UnityEngine.Networking;
 
-namespace TabletopCardCompanion
+namespace TabletopCardCompanion.PlayingPieces
 {
+    /// <summary>
+    /// This class exists to demonstrate that <see cref="MessageBasedCallback"/> attributes work properly with inheritance.
+    /// </summary>
     public class Derived : Base
     {
-        // Note: Attribute unecessary, but not harmful.
-        //       Derived attribute overrides base attribute.
+        // ClientSidePrediction is able to be overriden for derived class.
         [MessageRpc(ClientSidePrediction = false)]
         public override void FlipOver()
         {
             DebugStreamer.AddMessage("Derived: FlipOver");
         }
 
-        [MessageRpc(ClientSidePrediction = true)]
+        // Don't actually need [MessageRpc()] attribute on child class.
         public override void Scale(float percent)
         {
             DebugStreamer.AddMessage("Derived: Scale " + percent + " percent.");
         }
 
+
+
+        // These are temporary, for learning about how to accomodate duplicate scripts on the same game object.
         [Command]
         private void CmdDoIt()
         {

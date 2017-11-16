@@ -299,10 +299,10 @@ MonoBehaviour:
   m_AutoCreatePlayer: 1
   m_PlayerSpawnMethod: 0
   m_OfflineScene: Offline
-  m_OnlineScene: Online - Boxes
+  m_OnlineScene: Online - Cards
   m_SpawnPrefabs:
-  - {fileID: 1980375676536174, guid: 83486de3e63e63646bdadd0098935120, type: 2}
-  - {fileID: 1199826234068616, guid: 103a13d1d3d88aa43ac11a75007d792b, type: 2}
+  - {fileID: 1299496008553356, guid: 4d1285d738284444a9cee5d12978d097, type: 2}
+  - {fileID: 1182777536436630, guid: 919aa25c2a187fb4cb3915fc49e59d54, type: 2}
   - {fileID: 1727278743526904, guid: 1a1a9b3621e62a9428e86c80c3be7361, type: 2}
   - {fileID: 1204081017763190, guid: 35ededb89d8a249418e8f37e7f612e3e, type: 2}
   m_CustomConfig: 0
