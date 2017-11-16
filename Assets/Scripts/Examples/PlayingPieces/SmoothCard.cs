@@ -1,8 +1,8 @@
-﻿using LocalAuthority.Components;
-using TabletopCardCompanion.Components;
+﻿using Examples.Components;
+using LocalAuthority.Components;
 using UnityEngine;
 
-namespace TabletopCardCompanion.PlayingPieces
+namespace Examples.PlayingPieces
 {
     /// <summary>
     /// Represents a playing card (Poker, Magic the Gathering, Zombicide, etc.).

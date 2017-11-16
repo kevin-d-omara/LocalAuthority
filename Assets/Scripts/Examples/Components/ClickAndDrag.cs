@@ -1,7 +1,7 @@
 ﻿using LocalAuthority.Components;
 using UnityEngine;
 
-namespace TabletopCardCompanion.Components
+namespace Examples.Components
 {
     /// <summary>
     /// This component enables the game object to be moved by clicking on the object and dragging.

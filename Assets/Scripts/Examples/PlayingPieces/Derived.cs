@@ -1,8 +1,8 @@
-﻿using LocalAuthority;
-using TabletopCardCompanion.Debug;
+﻿using Examples.Debug;
+using LocalAuthority;
 using UnityEngine.Networking;
 
-namespace TabletopCardCompanion.PlayingPieces
+namespace Examples.PlayingPieces
 {
     /// <summary>
     /// This class exists to demonstrate that <see cref="MessageBasedCallback"/> attributes work properly with inheritance.

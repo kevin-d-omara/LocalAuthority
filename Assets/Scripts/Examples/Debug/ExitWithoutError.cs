@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace TabletopCardCompanion.Debug
+namespace Examples.Debug
 {
     public class ExitWithoutError : MonoBehaviour
     {

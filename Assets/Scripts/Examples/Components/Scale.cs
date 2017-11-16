@@ -3,7 +3,7 @@ using LocalAuthority.Components;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace TabletopCardCompanion.Components
+namespace Examples.Components
 {
     /// <summary>
     /// This component enables the game object's size to be increased or decreased by fixed amounts.

@@ -1,4 +1,4 @@
-﻿namespace TabletopCardCompanion
+﻿namespace Examples
 {
     /// <summary>
     /// Container class for input axis names.

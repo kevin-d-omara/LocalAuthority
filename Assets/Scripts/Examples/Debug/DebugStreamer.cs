@@ -18,7 +18,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace TabletopCardCompanion.Debug
+namespace Examples.Debug
 {
     public class DebugStreamer : MonoBehaviour
     {

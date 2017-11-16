@@ -3,7 +3,7 @@ using LocalAuthority.Components;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace TabletopCardCompanion.PlayingPieces
+namespace Examples.PlayingPieces
 {
     /// <summary>
     /// Represents a playing card (Poker, Magic the Gathering, Zombicide, etc.).

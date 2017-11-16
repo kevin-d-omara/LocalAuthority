@@ -3,7 +3,7 @@ using LocalAuthority.Components;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace TabletopCardCompanion.Components
+namespace Examples.Components
 {
     /// <summary>
     /// This component enables a game object to be rotated smoothly in fixed increments.

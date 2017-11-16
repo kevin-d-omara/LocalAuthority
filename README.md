@@ -1,5 +1,6 @@
 # LocalAuthority
 
+
 ## Introduction
 Unity does not allow sending `[Command]` or `[ClientRpc]` methods from non player-controlled game objects.
 Local Authority makes this possible.
@@ -13,6 +14,8 @@ Currently, I have basic client-side prediction working.
 
 See Gabriel Gambetta's [blog series](http://www.gabrielgambetta.com/client-server-game-architecture.html) for an excellent overview of client-server game architecture.
 
+*This project is still under active development*
+
 ## Features
 - Send a Command or RPC method from **any** game object, not just the player.
   - Decouple your code and improve readability!
@@ -24,8 +27,10 @@ See Gabriel Gambetta's [blog series](http://www.gabrielgambetta.com/client-serve
 
 [![Demo Video](<https://user-images.githubusercontent.com/11803661/32900831-3c5396fa-caa3-11e7-9ff8-9f7a6ac52322.png>)](https://www.youtube.com/watch?v=owCHkt8GL-0)
 
+## Examples
+Example code is available in the `Assets/Scripts/Examples/` folder. The `Offline` and `Online` scenes use the sample code.
 
-## Example
+Here's a snippet to show the power of Local Authority:
 ```csharp
 public class CardController : LocalAuthorityBehaviour
 {
@@ -37,11 +42,11 @@ public class CardController : LocalAuthorityBehaviour
     {
         if (Input.GetButtonDown("Jump")
         {
-            SendCallback(nameof(RpcFlipOver));
+            SendCallback(nameof(RpcFlipOver)); // Invoke the Rpc on all clients.
         }
     }
 
-    [MessageRpc(ClientSidePrediction = true)]
+    [MessageRpc(ClientSidePrediction = true)] // Make this method an Rpc and enable client-side prediction.
     public void RpcFlipOver()
     {
         var currentImage = isShowingFront ? frontImage : backImage;
