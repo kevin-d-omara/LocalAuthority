@@ -299,12 +299,12 @@ MonoBehaviour:
   m_AutoCreatePlayer: 1
   m_PlayerSpawnMethod: 0
   m_OfflineScene: Offline
-  m_OnlineScene: Online - Cards
+  m_OnlineScene: Online
   m_SpawnPrefabs:
-  - {fileID: 1299496008553356, guid: 4d1285d738284444a9cee5d12978d097, type: 2}
   - {fileID: 1182777536436630, guid: 919aa25c2a187fb4cb3915fc49e59d54, type: 2}
-  - {fileID: 1727278743526904, guid: 1a1a9b3621e62a9428e86c80c3be7361, type: 2}
-  - {fileID: 1204081017763190, guid: 35ededb89d8a249418e8f37e7f612e3e, type: 2}
+  - {fileID: 1299496008553356, guid: 4d1285d738284444a9cee5d12978d097, type: 2}
+  - {fileID: 1385515352524328, guid: 80011e33b96784c4da97f2a8d5aca520, type: 2}
+  - {fileID: 1658044378466160, guid: 73a4c2702d3e5174e9057f2381120936, type: 2}
   m_CustomConfig: 0
   m_MaxConnections: 4
   m_ConnectionConfig:

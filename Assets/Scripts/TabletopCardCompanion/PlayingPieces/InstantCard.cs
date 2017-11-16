@@ -14,6 +14,7 @@ namespace TabletopCardCompanion.PlayingPieces
     [RequireComponent(typeof(Ownership))]
     [RequireComponent(typeof(NetworkPosition))]
     [RequireComponent(typeof(SpriteRenderer))]
+    [RequireComponent(typeof(BoxCollider2D))]
     public class InstantCard : LocalAuthorityBehaviour
     {
         // Keyboard Button Actions ---------------------------------------------
@@ -22,12 +23,13 @@ namespace TabletopCardCompanion.PlayingPieces
         {
             if (Input.GetButtonDown(AxisName.ToggleColor))
             {
-                SendCallback(nameof(RpcToggleColor));
+                SendCallback(nameof(RpcFlipOver));
             }
 
             if (Input.GetButtonDown(AxisName.Rotate))
             {
-                var direction = Input.GetAxis("Rotate") > 0 ? 1 : -1;
+                // Positive rotation is counter-clockwise when looking at the screen.
+                var direction = Input.GetAxis("Rotate") > 0 ? -1 : 1;
                 var degrees = 60 * direction;
 
                 SendCallback(nameof(RpcRotate), degrees);
@@ -77,43 +79,51 @@ namespace TabletopCardCompanion.PlayingPieces
         }
 
 
-        // Commands ------------------------------------------------------------
+        // Callbacks -----------------------------------------------------------
 
         [MessageRpc(ClientSidePrediction = true)]
-        private void RpcToggleColor()
+        private void RpcFlipOver()
         {
-            IsToggled = !IsToggled;
-            spriteRenderer.color = IsToggled ? ToggleColor : Color.white;
+            isShowingFront = !isShowingFront;
+            UpdateSpriteAndCollider();
+        }
+
+        private void UpdateSpriteAndCollider()
+        {
+            spriteRenderer.sprite = isShowingFront ? frontSide : backSide;
+            boxCollider.size = spriteRenderer.sprite.bounds.size;
         }
 
         [MessageRpc(ClientSidePrediction = true)]
         private void RpcRotate(int degrees)
         {
-            RotationDegrees += degrees;
-            transform.rotation = Quaternion.Euler(0f, 0f, RotationDegrees);
+            rotationDegrees += degrees;
+            transform.rotation = Quaternion.Euler(0f, 0f, rotationDegrees);
         }
 
         [MessageRpc(ClientSidePrediction = true)]
         private void RpcScale(float percent)
         {
-            var newScale = LocalScale * (1f + percent);
-            LocalScale = newScale;
-            transform.localScale = LocalScale;
+            var newScale = localScale * (1f + percent);
+            localScale = newScale;
+            transform.localScale = localScale;
         }
 
 
         // Data ----------------------------------------------------------------
 
-        // "[SyncVar]"
-        public bool IsToggled { get; set; }
+        [SerializeField] private Sprite frontSide;
+        [SerializeField] private Sprite backSide;
 
-        // "[SyncVar]"
-        public Vector3 LocalScale { get; set; }
+        [SyncVar]
+        [SerializeField]
+        private bool isShowingFront = true;
 
-        // "[SyncVar]"
-        public float RotationDegrees { get; set; }
+        [SyncVar]
+        private Vector3 localScale;
 
-        public Color ToggleColor { get; } = Color.yellow;
+        [SyncVar]
+        private float rotationDegrees;
 
 
         // Initialization ------------------------------------------------------
@@ -121,6 +131,7 @@ namespace TabletopCardCompanion.PlayingPieces
         private Ownership ownership;
         private NetworkPosition networkPosition;
         private SpriteRenderer spriteRenderer;
+        private BoxCollider2D boxCollider;
 
         protected override void Awake()
         {
@@ -128,14 +139,15 @@ namespace TabletopCardCompanion.PlayingPieces
             ownership = GetComponent<Ownership>();
             networkPosition = GetComponent<NetworkPosition>();
             spriteRenderer = GetComponent<SpriteRenderer>();
+            boxCollider = GetComponent<BoxCollider2D>();
         }
 
         public override void OnStartServer()
         {
             base.OnStartServer();
 
-            LocalScale = transform.localScale;
-            RotationDegrees = transform.rotation.z;
+            localScale = transform.localScale;
+            rotationDegrees = transform.rotation.z;
         }
 
         public override void OnStartClient()
@@ -143,9 +155,9 @@ namespace TabletopCardCompanion.PlayingPieces
             base.OnStartClient();
 
             // Apply SyncVar values to object view.
-            spriteRenderer.color = IsToggled ? ToggleColor : Color.white;
-            transform.rotation = Quaternion.Euler(0f, 0f, RotationDegrees);
-            transform.localScale = LocalScale;
+            transform.rotation = Quaternion.Euler(0f, 0f, rotationDegrees);
+            transform.localScale = localScale;
+            UpdateSpriteAndCollider();
         }
 
 
@@ -157,9 +169,9 @@ namespace TabletopCardCompanion.PlayingPieces
             if (initialState)
             {
                 // SyncVars
-                writer.Write(IsToggled);
-                writer.Write(LocalScale);
-                writer.Write(RotationDegrees);
+                writer.Write(isShowingFront);
+                writer.Write(localScale);
+                writer.Write(rotationDegrees);
                 return true;
             }
 
@@ -172,10 +184,25 @@ namespace TabletopCardCompanion.PlayingPieces
             if (initialState)
             {
                 // SyncVars
-                IsToggled = reader.ReadBoolean();
-                LocalScale = reader.ReadVector3();
-                RotationDegrees = reader.ReadSingle();
+                isShowingFront = reader.ReadBoolean();
+                localScale = reader.ReadVector3();
+                rotationDegrees = reader.ReadSingle();
             }
+        }
+
+
+        // Editor --------------------------------------------------------------
+
+        private void OnValidate()
+        {
+            if (frontSide == null || backSide == null)
+                return;
+
+            // Get components.
+            spriteRenderer = GetComponent<SpriteRenderer>();
+            boxCollider = GetComponent<BoxCollider2D>();
+
+            UpdateSpriteAndCollider();
         }
     }
 }
