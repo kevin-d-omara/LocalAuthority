@@ -155,13 +155,13 @@ Prefab:
         type: 2}
       propertyPath: frontSide
       value: 
-      objectReference: {fileID: 21300000, guid: 68ea0a14d6f33e3478afce144b2ee333,
+      objectReference: {fileID: 21300000, guid: e2a7e16edf291b040b8b0acb9d552955,
         type: 3}
     - target: {fileID: 212901877654505882, guid: 919aa25c2a187fb4cb3915fc49e59d54,
         type: 2}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: 68ea0a14d6f33e3478afce144b2ee333,
+      objectReference: {fileID: 21300000, guid: e2a7e16edf291b040b8b0acb9d552955,
         type: 3}
     - target: {fileID: 212901877654505882, guid: 919aa25c2a187fb4cb3915fc49e59d54,
         type: 2}
@@ -182,7 +182,7 @@ Prefab:
         type: 2}
       propertyPath: backSide
       value: 
-      objectReference: {fileID: 21300000, guid: 00db36e855669c346b2c6cfe26491472,
+      objectReference: {fileID: 21300000, guid: be1c374d0f4dfc64da8117412a9fdee6,
         type: 3}
     - target: {fileID: 61423436850507322, guid: 919aa25c2a187fb4cb3915fc49e59d54,
         type: 2}
@@ -1045,8 +1045,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c22325bfdff368d4b8981bd16785fe64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  frontSide: {fileID: 21300000, guid: 68ea0a14d6f33e3478afce144b2ee333, type: 3}
-  backSide: {fileID: 21300000, guid: 00db36e855669c346b2c6cfe26491472, type: 3}
+  frontSide: {fileID: 21300000, guid: e2a7e16edf291b040b8b0acb9d552955, type: 3}
+  backSide: {fileID: 21300000, guid: be1c374d0f4dfc64da8117412a9fdee6, type: 3}
   isShowingFront: 1
 --- !u!212 &1666984866
 SpriteRenderer:
@@ -1083,12 +1083,12 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 68ea0a14d6f33e3478afce144b2ee333, type: 3}
+  m_Sprite: {fileID: 21300000, guid: e2a7e16edf291b040b8b0acb9d552955, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.16, y: 0.16}
+  m_Size: {x: 5.84, y: 8.86}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -1132,7 +1132,7 @@ BoxCollider2D:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
     oldSize: {x: 5.84, y: 8.86}
-    newSize: {x: 0.16, y: 0.16}
+    newSize: {x: 5.84, y: 8.86}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
@@ -1360,7 +1360,7 @@ Prefab:
         type: 2}
       propertyPath: frontSide
       value: 
-      objectReference: {fileID: 21300000, guid: 767ae6019c20ee944bd5f1b54df79195,
+      objectReference: {fileID: 21300000, guid: 1cfcfef0a79f4b34eb6d4805b8ca5fb4,
         type: 3}
     - target: {fileID: 61423436850507322, guid: 919aa25c2a187fb4cb3915fc49e59d54,
         type: 2}
@@ -1396,13 +1396,13 @@ Prefab:
         type: 2}
       propertyPath: backSide
       value: 
-      objectReference: {fileID: 21300000, guid: 00db36e855669c346b2c6cfe26491472,
+      objectReference: {fileID: 21300000, guid: be1c374d0f4dfc64da8117412a9fdee6,
         type: 3}
     - target: {fileID: 212901877654505882, guid: 919aa25c2a187fb4cb3915fc49e59d54,
         type: 2}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: 00db36e855669c346b2c6cfe26491472,
+      objectReference: {fileID: 21300000, guid: be1c374d0f4dfc64da8117412a9fdee6,
         type: 3}
     - target: {fileID: 212901877654505882, guid: 919aa25c2a187fb4cb3915fc49e59d54,
         type: 2}
