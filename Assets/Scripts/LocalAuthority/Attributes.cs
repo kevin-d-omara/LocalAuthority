@@ -69,7 +69,7 @@ namespace LocalAuthority
 
     /// <summary>
     /// The attributed method will behave like a <see cref="CommandAttribute"/>.
-    /// When invoked with <see cref="LocalAuthorityBehaviour.InvokeCommand"/>, it will run only on the server.
+    /// When invoked with <see cref="LocalAuthorityBehaviour.SendCallback"/>, it will run only on the server.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public class MessageCommand : MessageBasedCallback
@@ -93,7 +93,7 @@ namespace LocalAuthority
 
     /// <summary>
     /// The attributed method will behave like a <see cref="ClientRpcAttribute"/>.
-    /// When invoked with <see cref="LocalAuthorityBehaviour.SendRpc"/>, it will run on all clients.
+    /// When invoked with <see cref="LocalAuthorityBehaviour.SendCallback"/>, it will run on all clients.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public class MessageRpc : MessageBasedCallback

@@ -10,11 +10,11 @@ namespace LocalAuthority
     public static class Registration
     {
         /// <summary>
-        /// Create and register callbacks for methods marked with the <see cref="MessageBasedCallback"/> attribute in the specified class.
+        /// Create and register callbacks for methods marked with a <see cref="MessageBasedCallback"/> attribute in the specified class.
         /// </summary>
         public static void RegisterCommands(Type classType)
         {
-            if (AlreadyRegistered.Contains(classType)) return;
+            if (RegisteredClasses.Contains(classType)) return;
 
             var methods = classType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             foreach (var method in methods)
@@ -32,10 +32,10 @@ namespace LocalAuthority
                     {
                         CachePredictedCallback(hash, method);
                     }
-
-                    AlreadyRegistered.Add(classType);
                 }
             }
+
+            RegisteredClasses.Add(classType);
         }
 
         /// <summary>
@@ -137,7 +137,7 @@ namespace LocalAuthority
         /// <summary>
         /// Classes that have already had their callbacks created.
         /// </summary>
-        private static readonly HashSet<Type> AlreadyRegistered = new HashSet<Type>();
+        private static readonly HashSet<Type> RegisteredClasses = new HashSet<Type>();
 
         #endregion
     }

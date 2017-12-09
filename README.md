@@ -32,7 +32,7 @@ Example code is available in the `Assets/Scripts/Examples/` folder. The `Offline
 
 Here's a snippet to show the power of Local Authority:
 ```csharp
-public class CardController : LocalAuthorityBehaviour
+public class PlayingCard : LocalAuthorityBehaviour
 {
     public Sprite frontImage;
     public Sprite backImage;
@@ -49,8 +49,10 @@ public class CardController : LocalAuthorityBehaviour
     [MessageRpc(ClientSidePrediction = true)] // Make this method an Rpc and enable client-side prediction.
     public void RpcFlipOver()
     {
-        var currentImage = isShowingFront ? frontImage : backImage;
-        GetComponent<SpriteRenderer>().sprite = currentImage;
+        var imageToShow = isShowingFront ? frontImage : backImage;
+        var spriteRenderer = GetComponent<SpriteRenderer>();
+        spriteRenderer.sprite = imageToShow;
+        isShowingFront = !isShowingFront;
     }
 }
 ```

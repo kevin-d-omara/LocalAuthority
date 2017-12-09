@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 namespace LocalAuthority
 {
     /// <summary>
-    /// Message tha holds a variable number of objects. Each object's Type must be readable and writeable
+    /// Message that holds a variable number of objects. Each object's Type must be readable and writeable
     /// by <see cref="NetworkReader"/> and <see cref="NetworkWriter"/>.
     /// </summary>
     public class VarArgsNetIdMessasge : MessageBase
